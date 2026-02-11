@@ -1,0 +1,196 @@
+{
+  "clientName": "",
+  "clientAddress": "",
+  "clientCity": "",
+  "clientPhone": "",
+  "clientEmail": "",
+  "visitDate": "",
+  "buildingType": "Maison individuelle",
+  "buildingAge": "",
+  "buildingFloors": "",
+  "observations": "<h1>hkuhuhiu</h1><div>khgyguyguygu</div>",
+  "selectedProbs": [
+    "reseaux_encastres"
+  ],
+  "probData": {
+    "reseaux_encastres": {
+      "text": "Des réseaux techniques (canalisations d'eau, évacuations, gaines électriques) ont été encastrés dans les murs en pisé. Ces interventions fragilisent le mur par la création de saignées qui réduisent sa section porteuse et peuvent créer des points de concentration de contraintes.\n\nLes canalisations d'easqdqsddqsdqdsqdu encastrées représentent un risque particulièrement élevé : la moindre fuite, même minime, peut rester invisible pendant longtemps tout en dégradant progressivement le pisé de l'intérieur. Le mur perd alors sa cohésion sans signe extérieur apparent.\n\nPréconisations : privilégier systématiquement le passage des réseaux en apparent ou en gaines techniques rapportées plutôt qu'encastrés dans le pisé. Vérifier l'étanchéité des canalisations existantes encastrées. En cas de rénovation, déplacer les réseaux encastrés vers des solutions apparentes. Pour l'électricité, des goulottes ou plinthes techniques sont préférables aux saignées.",
+      "priority": "important",
+      "photos": []
+    }
+  },
+  "conclusion": "",
+  "library": [
+    {
+      "id": "remontees_capillaires",
+      "name": "Remontées capillaires",
+      "tags": [
+        "humidité",
+        "mur",
+        "soubassement"
+      ],
+      "defaultText": "Des traces d'humidité sont visibles en pied de mur, caractéristiques de remontées capillaires. Ce phénomène se produit lorsque l'eau du sol remonte par capillarité dans les maçonneries du soubassement puis dans le pisé.\n\nLes causes possibles sont multiples : enfouissement partiel ou total du soubassement en pierre, présence d'un revêtement de sol imperméable (dalle béton, enrobé, carrelage) empêchant l'évaporation naturelle, ou modification du terrain environnant ayant rehaussé le niveau du sol.\n\nPréconisations : il est recommandé de dégager les pieds de murs, de supprimer tout revêtement imperméable sur au minimum 50 cm autour du bâtiment, et de rétablir un sol perméable (gravier, terre battue) permettant l'évaporation naturelle de l'humidité. Un drainage périphérique peut être envisagé si nécessaire."
+    },
+    {
+      "id": "fissures_structurelles",
+      "name": "Fissures structurelles",
+      "tags": [
+        "mur",
+        "structure",
+        "fondations"
+      ],
+      "defaultText": "Des fissures sont observées sur les murs en pisé. Dans le bâti ancien, les fissures sont courantes mais ne sont pas toujours problématiques. Il convient de distinguer les fissures stabilisées (anciennes, non évolutives) des fissures actives (récentes, évolutives).\n\nLes causes possibles incluent : tassements différentiels des fondations, surcharges ponctuelles, ouvertures créées sans précautions, vibrations, ou mouvements de terrain. Les fissures aux angles des ouvertures sont fréquentes et souvent liées à une concentration de contraintes.\n\nPréconisations : mise en place de témoins de fissures pour surveiller leur évolution pendant plusieurs mois. Si les fissures sont stabilisées, elles pourront être comblées avec un mortier de terre compatible avec le pisé existant. Si les fissures sont actives, un diagnostic structurel approfondi sera nécessaire avant toute intervention."
+    },
+    {
+      "id": "enduits_inadaptes",
+      "name": "Enduits inadaptés (ciment)",
+      "tags": [
+        "mur",
+        "enduit",
+        "humidité"
+      ],
+      "defaultText": "Des enduits à base de ciment ont été appliqués sur les murs en pisé. Ce type de revêtement est particulièrement néfaste pour les constructions en terre crue car il empêche les échanges hygrométriques naturels du mur (perspirance).\n\nL'humidité se retrouve piégée à l'intérieur du mur, ce qui entraîne une dégradation progressive du pisé derrière l'enduit, souvent invisible de l'extérieur. On observe fréquemment un cloquage ou un décollement de l'enduit ciment, signe que le pisé se dégrade par rétention d'humidité.\n\nPréconisations : retirer l'enduit ciment avec précaution (outils manuels, pas de moyens mécaniques lourds qui pourraient endommager le pisé sous-jacent). Après séchage du mur, appliquer un enduit à la chaux aérienne ou un enduit terre, compatibles avec le fonctionnement hygrométrique du pisé. Un enduit en trois couches (gobetis, corps d'enduit, finition) à la chaux est la solution la plus courante et durable."
+    },
+    {
+      "id": "soubassement",
+      "name": "État du soubassement",
+      "tags": [
+        "soubassement",
+        "humidité",
+        "structure"
+      ],
+      "defaultText": "Le soubassement en pierre constitue la base protectrice du mur en pisé, jouant le rôle de \"bottes de pluie\" qui isolent la terre crue du contact direct avec le sol humide. Son bon état est essentiel à la pérennité de l'ensemble de la structure.\n\nDes dégradations du soubassement ont été observées : joints dégradés, pierres descellées, ou hauteur insuffisante par rapport au niveau du sol actuel. Un soubassement dégradé ou trop bas expose directement le pisé à l'humidité du sol.\n\nPréconisations : rejointoyer le soubassement avec un mortier de chaux (pas de ciment). Si le niveau du sol a été rehaussé, envisager un décaissement pour retrouver une hauteur de soubassement suffisante (minimum 30 à 40 cm au-dessus du niveau du sol). Vérifier l'état des pierres et remplacer celles qui sont trop dégradées."
+    },
+    {
+      "id": "toiture_couverture",
+      "name": "Toiture et couverture",
+      "tags": [
+        "toit",
+        "eau",
+        "charpente"
+      ],
+      "defaultText": "La toiture est l'élément de protection principal du mur en pisé. Elle doit assurer une mise hors d'eau efficace et disposer de débords (dépassées) suffisants pour éloigner les eaux de pluie des façades.\n\nDes désordres ont été constatés au niveau de la couverture : tuiles cassées ou déplacées, noues ou solins défectueux, débords de toiture insuffisants, ou gouttières et descentes d'eau défaillantes. Toute infiltration d'eau par la toiture peut avoir des conséquences graves et rapides sur le pisé.\n\nPréconisations : révision complète de la couverture, remplacement des éléments défectueux. Vérification et remise en état des gouttières et descentes d'eau pluviale. S'assurer que l'évacuation des eaux se fait loin du pied des murs. Si les débords de toiture sont insuffisants, envisager leur prolongation pour mieux protéger les façades."
+    },
+    {
+      "id": "erosion_pise",
+      "name": "Érosion du pisé nu",
+      "tags": [
+        "mur",
+        "enduit",
+        "façade"
+      ],
+      "defaultText": "Des zones de pisé non protégé (sans enduit ni bardage) présentent des signes d'érosion dus à l'action combinée de la pluie et du vent. L'érosion se manifeste par un creusement progressif de la surface du mur, avec apparition de reliefs en creux entre les lits de damage.\n\nLe degré d'érosion dépend de l'exposition de la façade (les façades ouest et sud-ouest étant les plus exposées aux pluies dominantes) et de la protection offerte par la toiture et l'environnement proche.\n\nPréconisations : les zones érodées peuvent être réparées avec un mortier de terre (terre + eau + éventuellement paille) préparé idéalement à partir de terre du site pour assurer une compatibilité optimale. Pour une protection durable, la mise en place d'un enduit à la chaux aérienne ou d'un enduit terre est recommandée sur les façades les plus exposées. Un badigeon à l'eau peut suffire sur les façades abritées."
+    },
+    {
+      "id": "isolation_inadaptee",
+      "name": "Isolation inadaptée",
+      "tags": [
+        "isolation",
+        "humidité",
+        "mur"
+      ],
+      "defaultText": "Une isolation intérieure ou extérieure inadaptée a été mise en place sur les murs en pisé. L'utilisation de matériaux imperméables à la vapeur d'eau (polystyrène, laine de verre avec pare-vapeur, plaques de plâtre avec complexe isolant) crée un point de condensation à l'interface entre l'isolant et le pisé, provoquant une accumulation d'humidité néfaste.\n\nCe type d'isolation ne respecte pas le fonctionnement hygrométrique du pisé et peut entraîner des pathologies graves : développement de moisissures, dégradation du pisé derrière le doublage, détérioration de l'air intérieur.\n\nPréconisations : déposer l'isolation inadaptée et laisser sécher le mur. Privilégier des isolants perspirants (fibre de bois, laine de chanvre, laine de bois) posés avec un vide d'air ou un frein-vapeur hygrovariable. L'isolation par l'extérieur en fibre de bois sous enduit à la chaux constitue souvent la meilleure solution pour le pisé, car elle protège le mur tout en respectant sa perspirance."
+    },
+    {
+      "id": "abords_batiment",
+      "name": "Abords du bâtiment",
+      "tags": [
+        "abords",
+        "humidité",
+        "eau"
+      ],
+      "defaultText": "Les abords immédiats du bâtiment présentent des aménagements incompatibles avec la bonne conservation des murs en pisé. On observe la présence de revêtements imperméables (dalle béton, enrobé bitumeux, carrelage) au pied des murs, empêchant l'évaporation naturelle de l'humidité du sol.\n\nD'autres facteurs aggravants peuvent être présents : terrain en pente dirigeant les eaux de ruissellement vers le bâtiment, végétation trop proche des murs retenant l'humidité, stockage de matériaux contre les façades.\n\nPréconisations : supprimer les revêtements imperméables au pied des murs sur une largeur minimale de 50 cm (idéalement 1 m). Rétablir un sol perméable (gravier, terre, gazon). Assurer des pentes de terrain dirigeant les eaux de ruissellement à l'écart du bâtiment. Éloigner la végétation d'au moins 50 cm des façades et dégager tout stockage de matériaux contre les murs."
+    },
+    {
+      "id": "ventilation",
+      "name": "Ventilation insuffisante",
+      "tags": [
+        "ventilation",
+        "humidité",
+        "intérieur"
+      ],
+      "defaultText": "Le bâtiment présente une ventilation insuffisante, ce qui favorise l'accumulation d'humidité dans l'air intérieur et dans les murs. Les constructions en pisé nécessitent un renouvellement d'air régulier pour évacuer l'excès d'humidité et permettre aux murs de jouer leur rôle de régulateur hygrométrique.\n\nL'installation de fenêtres double vitrage très étanches sans système de ventilation compensatoire, la fermeture de bouches d'aération existantes, ou l'absence de VMC dans les pièces humides sont des facteurs aggravants fréquemment rencontrés.\n\nPréconisations : mettre en place une ventilation adaptée (VMC simple flux hygroréglable ou double flux). Installer des entrées d'air sur les menuiseries ou dans les pièces sèches. S'assurer d'une aération régulière, notamment dans les pièces humides (cuisine, salle de bain). Vérifier l'existence et le bon fonctionnement des bouches d'aération en parties basses et hautes des murs."
+    },
+    {
+      "id": "ouvertures_modifications",
+      "name": "Ouvertures et modifications structurelles",
+      "tags": [
+        "mur",
+        "structure",
+        "ouverture"
+      ],
+      "defaultText": "Des ouvertures ont été créées ou modifiées dans les murs en pisé sans respect des règles constructives adaptées à ce matériau. La création d'ouvertures dans un mur en pisé nécessite des précautions particulières pour ne pas fragiliser la structure.\n\nOn observe des linteaux inadaptés (béton, métal sans précaution), des ouvertures trop proches des angles du bâtiment, ou des agrandissements ayant fragilisé la section de mur restante. Des fissures aux angles des ouvertures témoignent souvent de ces interventions inadaptées.\n\nPréconisations : toute nouvelle ouverture ou modification doit être étudiée par un professionnel connaissant le pisé. Privilégier des linteaux en bois. Renforcer si nécessaire les jambages avec des pierres ou des briques de terre cuite. Limiter la taille des ouvertures en fonction de l'épaisseur et de la hauteur du mur. Éviter dans la mesure du possible l'utilisation de matériaux rigides pour les chaînages."
+    },
+    {
+      "id": "salpetre",
+      "name": "Salpêtre et efflorescences",
+      "tags": [
+        "humidité",
+        "mur",
+        "intérieur"
+      ],
+      "defaultText": "Des dépôts blanchâtres (salpêtre, efflorescences salines) sont visibles sur les murs, principalement en partie basse. Ces cristallisations de sels minéraux sont le signe d'une migration d'eau à travers la maçonnerie : l'eau transporte les sels contenus dans la terre ou le soubassement et les dépose en surface lors de l'évaporation.\n\nLe salpêtre est un indicateur fiable de la présence d'humidité excessive dans le mur. Il ne constitue pas en lui-même un danger structurel, mais signale une pathologie humide sous-jacente qu'il convient de traiter. Les causes sont généralement les mêmes que pour les remontées capillaires : soubassement enterré, sol imperméable, ou défaut de ventilation.\n\nPréconisations : brosser les efflorescences à sec (ne pas utiliser d'eau qui redissoudrait les sels). Identifier et traiter la source d'humidité avant toute réfection d'enduit. Améliorer la ventilation des pièces concernées. Ne pas appliquer de traitement hydrofuge de surface qui emprisonnerait l'humidité dans le mur."
+    },
+    {
+      "id": "charpente_planchers",
+      "name": "Charpente et planchers",
+      "tags": [
+        "toit",
+        "charpente",
+        "structure"
+      ],
+      "defaultText": "La charpente et les planchers constituent des éléments structurels essentiels du bâtiment en pisé. Les pièces de bois ancrées dans les murs en terre sont des points sensibles : si le mur est humide, le bois à l'interface peut se dégrader (pourrissement, attaque d'insectes xylophages).\n\nL'état de la charpente conditionne directement la protection du pisé. Une charpente déformée ou affaissée peut entraîner des défauts d'étanchéité de la couverture et des infiltrations d'eau dans les murs. Les abouts de poutres et solives encastrés dans le pisé sont particulièrement vulnérables.\n\nPréconisations : vérifier l'état des bois de charpente et des planchers, en particulier les abouts encastrés dans les murs. Rechercher des traces d'attaque d'insectes xylophages (petits trous, sciure) ou de champignons (mérule). Si des pièces de bois sont dégradées, les remplacer ou les renforcer en veillant à ne pas fragiliser le mur en pisé. Assurer une ventilation suffisante des combles."
+    },
+    {
+      "id": "reseaux_encastres",
+      "name": "Réseaux encastrés (eau, élec)",
+      "tags": [
+        "mur",
+        "intérieur",
+        "eau"
+      ],
+      "defaultText": "l,smlqsmsql,qd(canalisations d'eau, évacuations, gaines électriques) ont été encastrés dans les murs en pisé. Ces interventions fragilisent le mur par la création de saignées qui réduisent sa section porteuse et peuvent créer des points de concentration de contraintes.\n\nLes canalisations d'eau encastrées représentent un risque particulièrement élevé : la moindre fuite, même minime, peut rester invisible pendant longtemps tout en dégradant progressivement le pisé de l'intérieur. Le mur perd alors sa cohésion sans signe extérieur apparent.\n\nPréconisations : privilégier systématiquement le passage des réseaux en apparent ou en gaines techniques rapportées plutôt qu'encastrés dans le pisé. Vérifier l'étanchéité des canalisations existantes encastrées. En cas de rénovation, déplacer les réseaux encastrés vers des solutions apparentes. Pour l'électricité, des goulottes ou plinthes techniques sont préférables aux saignées."
+    },
+    {
+      "id": "dalle_sol",
+      "name": "Dalle et revêtement de sol intérieur",
+      "tags": [
+        "humidité",
+        "intérieur",
+        "soubassement"
+      ],
+      "defaultText": "Le revêtement de sol intérieur joue un rôle important dans l'équilibre hygrométrique du bâtiment en pisé. Une dalle béton coulée directement au sol sans coupure de capillarité empêche l'évaporation naturelle de l'humidité du terrain et la redirige vers les murs, aggravant les remontées capillaires.\n\nLe sol traditionnel d'un bâtiment en pisé est généralement en terre battue, en carreaux de terre cuite posés sur lit de sable, ou en dallage de pierre. Ces sols perspirants participent à la régulation hygrométrique globale du bâtiment. Leur remplacement par une dalle béton étanche rompt cet équilibre.\n\nPréconisations : si le sol existant est perspirant, le conserver autant que possible. En cas de réfection, privilégier un hérisson ventilé (lit de galets) recouvert d'une dalle de chaux, plutôt qu'une dalle béton avec film polyane. Pour les pièces humides, prévoir une étanchéité localisée sans compromettre la perspirance de l'ensemble du bâtiment."
+    },
+    {
+      "id": "trous_banche",
+      "name": "Trous de banche et clés",
+      "tags": [
+        "mur",
+        "façade",
+        "structure"
+      ],
+      "defaultText": "Les trous de banche (ou trous de clés) sont les empreintes laissées dans le mur par les traverses de bois qui maintenaient les coffrages lors de la construction. Ces cavités régulièrement espacées sont caractéristiques du pisé et font partie de son identité constructive.\n\nLorsqu'ils sont ouverts et exposés aux intempéries, les trous de banche peuvent constituer des points d'entrée d'eau dans le mur. L'eau stagnant dans ces cavités pénètre dans le pisé et provoque une dégradation localisée, surtout sur les façades exposées aux pluies dominantes.\n\nPréconisations : combler les trous de banche ouverts avec un mortier de terre préparé à partir de terre du site pour une compatibilité optimale. Éviter impérativement le ciment pour le rebouchage. Sur les façades protégées par un enduit, les trous seront naturellement couverts. Sur le pisé apparent, un bouchon de terre légèrement en retrait de la surface est la solution la plus adaptée."
+    },
+    {
+      "id": "condensation_moisissures",
+      "name": "Condensation et moisissures",
+      "tags": [
+        "humidité",
+        "ventilation",
+        "intérieur"
+      ],
+      "defaultText": "Des traces de condensation et/ou de moisissures sont observées sur les parois intérieures, généralement dans les angles, derrière les meubles, ou autour des fenêtres. Ces désordres résultent de la rencontre entre l'air chaud et humide intérieur et des surfaces froides (ponts thermiques, murs non isolés).\n\nDans un bâtiment en pisé, la condensation peut être aggravée par une isolation inadaptée créant des points froids, une ventilation insuffisante, ou un excès de vapeur d'eau sans évacuation. Le pisé a naturellement une bonne capacité de régulation hygrométrique, mais celle-ci a ses limites.\n\nPréconisations : améliorer la ventilation (VMC ou entrées d'air sur menuiseries). Traiter les ponts thermiques avec des solutions perspirants. Éloigner les meubles des murs extérieurs. Ne pas appliquer de peintures imperméables sur les murs en pisé. Si nécessaire, appliquer un correcteur thermique perspirant (enduit chaux-chanvre, panneau de liège)."
+    },
+    {
+      "id": "biodegradation",
+      "name": "Biodégradation (végétation, insectes)",
+      "tags": [
+        "mur",
+        "abords",
+        "façade"
+      ],
+      "defaultText": "Des développements végétaux (lierre, mousse, plantes grimpantes, racines) ou des traces d'activité biologique (insectes, rongeurs) sont observés sur ou dans les murs en pisé. Le lierre, bien que d'apparence protectrice, peut s'avérer néfaste : ses racines pénètrent dans les fissures, retiennent l'humidité et accélèrent la dégradation.\n\nLes galeries creusées par les insectes ou rongeurs dans le pisé fragilisent la structure. Les abeilles solitaires et guêpes maçonnes peuvent créer des cavités significatives. L'accumulation de terre végétale et débris organiques au pied des murs favorise la rétention d'humidité.\n\nPréconisations : retirer les végétaux grimpants avec précaution. Couper les racines sans tenter de les extraire du mur. Élaguer la végétation proche pour maintenir 50 cm minimum entre plantations et façades. Combler les galeries d'insectes avec un mortier de terre. Nettoyer régulièrement les pieds de murs de tout amas de terre végétale et débris."
+    }
+  ],
+  "savedAt": "2026-02-11T18:01:28.458Z"
+}
