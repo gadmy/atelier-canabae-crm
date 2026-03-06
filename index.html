@@ -1,0 +1,3311 @@
+<!--
+╔══════════════════════════════════════════════════════════════════╗
+║                    CR PISÉ — ATELIER CANABAE                     ║
+║            Générateur de comptes rendus de visite conseil         ║
+║                   pour maisons en pisé                           ║
+╠══════════════════════════════════════════════════════════════════╣
+║  Développeur : Alix Moreau — Atelier Canabae                    ║
+║  Assisté par : Claude (Anthropic)                                ║
+║  Version actuelle : 1.0.0                                        ║
+║  Dernière mise à jour : 2026-02-09                               ║
+╠══════════════════════════════════════════════════════════════════╣
+║                                                                  ║
+║  MÉTHODE DE TRAVAIL                                              ║
+║  ==================                                              ║
+║  Ce projet est développé en collaboration avec Claude (Anthropic)║
+║  À chaque nouvelle conversation :                                ║
+║  1. Uploader le fichier HTML actuel                              ║
+║  2. Demander à Claude à quelle version on en est                 ║
+║  3. Expliquer la fonctionnalité ou correction souhaitée          ║
+║  4. Claude indique "CHERCHE/REMPLACE" pour chaque modification   ║
+║  5. Appliquer les modifications étape par étape (copier-coller)  ║
+║     maximum 150 caractères par modification                      ║
+║  6. Tester dans le navigateur après chaque changement            ║
+║  7. Le changement de version est décidé par le développeur       ║
+║     uniquement                                                   ║
+║  8. Mettre à jour l'historique régulièrement                     ║
+║                                                                  ║
+╠══════════════════════════════════════════════════════════════════╣
+║                                                                  ║
+║  HISTORIQUE DES VERSIONS                                         ║
+║  ========================                                        ║
+║                                                                  ║
+║  v1.0.0 — 2026-02-09                                            ║
+║  ─────────────────────                                           ║
+║  • Création du prototype initial                                 ║
+║  • Interface trois panneaux : sidebar + éditeur + aperçu PDF     ║
+║  • Formulaire informations client (nom, adresse, tél, email,     ║
+║    type bâtiment, époque, niveaux, observations)                 ║
+║  • Bibliothèque de 10 problématiques types pré-rédigées :        ║
+║    - Remontées capillaires                                       ║
+║    - Fissures structurelles                                      ║
+║    - Enduits inadaptés (ciment)                                  ║
+║    - État du soubassement                                        ║
+║    - Toiture et couverture                                       ║
+║    - Érosion du pisé nu                                          ║
+║    - Isolation inadaptée                                         ║
+║    - Abords du bâtiment                                          ║
+║    - Ventilation insuffisante                                    ║
+║    - Ouvertures et modifications structurelles                   ║
+║  • Sélection par clic dans la sidebar                            ║
+║  • Textes éditables pour chaque problématique                    ║
+║  • Système de priorités (urgent/important/à surveiller)          ║
+║  • Ajout de photos avec légendes éditables                       ║
+║  • Réorganisation des problématiques (monter/descendre)          ║
+║  • Aperçu PDF intégré                                            ║
+║  • Export PDF via html2pdf.js                                    ║
+║  • Sauvegarde/chargement en JSON                                 ║
+║  • En-tête PDF avec infos Atelier Canabae                        ║
+║  • Bloc conclusion éditable                                     ║
+║  • Tri automatique par priorité dans le PDF                      ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+-->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CR Pisé — Atelier Canabae</title>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
+
+  :root {
+    --earth: #8B6914;
+    --earth-light: #C4A35A;
+    --earth-pale: #F5ECD7;
+    --earth-bg: #FAF6ED;
+    --clay: #B8764E;
+    --clay-dark: #7A4A2A;
+    --stone: #6B6B5E;
+    --stone-light: #9B9B8A;
+    --green: #5A7247;
+    --green-light: #8BA677;
+    --red-urgent: #C0392B;
+    --orange-important: #D4740A;
+    --yellow-watch: #B7950B;
+    --bg: #FAFAF5;
+    --surface: #FFFFFF;
+    --text: #2C2A25;
+    --text-light: #6B6860;
+    --border: #E5E0D5;
+    --shadow: 0 2px 12px rgba(44,42,37,0.08);
+    --shadow-lg: 0 8px 32px rgba(44,42,37,0.12);
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ========== HEADER ========== */
+  .app-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .app-header .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .app-header .logo-mark {
+    width: 42px; height: 42px;
+    background: var(--earth);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    letter-spacing: -1px;
+  }
+  .app-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--earth);
+    font-weight: 400;
+  }
+  .app-header h1 span {
+    color: var(--stone-light);
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    margin-left: 8px;
+  }
+  .header-actions {
+    display: flex; gap: 10px;
+  }
+
+  /* ========== BUTTONS ========== */
+  .btn {
+    padding: 9px 20px;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+    font-size: 13.5px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .btn-primary {
+    background: var(--earth);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--clay-dark); }
+  .btn-secondary {
+    background: var(--earth-pale);
+    color: var(--clay-dark);
+  }
+  .btn-secondary:hover { background: var(--earth-light); color: white; }
+  .btn-outline {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text-light);
+  }
+  .btn-outline:hover { border-color: var(--earth-light); color: var(--earth); }
+  .btn-danger {
+    background: #FDE8E5;
+    color: var(--red-urgent);
+  }
+  .btn-danger:hover { background: var(--red-urgent); color: white; }
+  .btn-sm { padding: 6px 14px; font-size: 12.5px; }
+  .btn-icon {
+    width: 34px; height: 34px; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px; background: transparent; border: 1px solid var(--border);
+    cursor: pointer; color: var(--text-light); transition: all 0.2s;
+  }
+  .btn-icon:hover { background: var(--earth-pale); color: var(--earth); border-color: var(--earth-light); }
+
+  /* ========== LAYOUT ========== */
+  .app-body {
+    display: flex;
+    height: calc(100vh - 72px);
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 300px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 20px;
+    flex-shrink: 0;
+  }
+  .sidebar h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    color: var(--earth);
+    margin-bottom: 14px;
+    font-weight: 400;
+  }
+  .sidebar-section {
+    margin-bottom: 24px;
+  }
+  .sidebar-section label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .sidebar-section input,
+  .sidebar-section textarea,
+  .sidebar-section select {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+    font-size: 13.5px;
+    color: var(--text);
+    background: var(--bg);
+    transition: border-color 0.2s;
+  }
+  .sidebar-section input:focus,
+  .sidebar-section textarea:focus {
+    outline: none;
+    border-color: var(--earth-light);
+  }
+  .sidebar-section textarea {
+    min-height: 60px;
+    resize: vertical;
+  }
+  .field-row {
+    display: flex; gap: 8px; margin-bottom: 8px;
+  }
+  .field-row > div { flex: 1; }
+
+  /* Main area */
+  .main-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 36px;
+    background: var(--bg);
+  }
+
+  /* ========== PROBLEMATIQUES LIBRARY ========== */
+  .prob-library {
+    margin-top: 12px;
+  }
+  .prob-item-lib {
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .prob-item-lib:hover {
+    border-color: var(--earth-light);
+    background: var(--earth-pale);
+  }
+  .prob-item-lib.selected {
+    border-color: var(--earth);
+    background: var(--earth-pale);
+  }
+  .prob-item-lib .prob-check {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .prob-item-lib.selected .prob-check {
+    background: var(--earth);
+    border-color: var(--earth);
+    color: white;
+  }
+  .prob-item-lib .prob-name {
+    font-size: 13px;
+    font-weight: 500;
+    flex: 1;
+  }
+
+  /* ========== CR EDITOR CARDS ========== */
+  .cr-section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--earth);
+    margin-bottom: 16px;
+    font-weight: 400;
+  }
+  
+  .prob-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin-bottom: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: all 0.2s;
+  }
+  .prob-card:hover {
+    box-shadow: var(--shadow-lg);
+  }
+  .prob-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--earth-pale) 0%, var(--bg) 100%);
+    cursor: grab;
+  }
+  .prob-card-header:active { cursor: grabbing; }
+  .drag-handle {
+    color: var(--stone-light);
+    font-size: 16px;
+    cursor: grab;
+    user-select: none;
+  }
+  .prob-card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 15.5px;
+    font-weight: 600;
+    color: var(--clay-dark);
+    flex: 1;
+  }
+
+  .priority-badge {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .priority-urgent { background: #FDE8E5; color: var(--red-urgent); }
+  .priority-important { background: #FEF0E0; color: var(--orange-important); }
+  .priority-watch { background: #FEF9E0; color: var(--yellow-watch); }
+  .priority-safe { background: #EAF5EA; color: #27AE60; }
+
+  .priority-select {
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+    cursor: pointer;
+    background: white;
+  }
+
+  .prob-card-body {
+    padding: 18px;
+  }
+  .prob-card-body textarea {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--text);
+    resize: vertical;
+    min-height: 100px;
+    background: var(--bg);
+    transition: border-color 0.2s;
+  }
+  .prob-card-body textarea:focus {
+    outline: none;
+    border-color: var(--earth-light);
+    background: white;
+  }
+
+  /* Photo area */
+  .photo-area {
+    margin-top: 14px;
+  }
+  .photo-area-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .photo-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+.photo-thumb {
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: relative;
+    border: 1.5px solid var(--border);
+    background: var(--bg);
+    flex-shrink: 0;
+  }
+  .photo-thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .photo-size-slider {
+    width: 100%;
+    margin-top: 4px;
+    accent-color: var(--earth);
+    height: 14px;
+    cursor: pointer;
+  }
+  .photo-thumb .photo-remove {
+    position: absolute; top: 4px; right: 4px;
+    width: 22px; height: 22px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .photo-thumb:hover .photo-remove { opacity: 1; }
+  .photo-thumb .photo-legend {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,0.55);
+    padding: 2px 6px;
+    color: white;
+    font-size: 10px;
+    cursor: pointer;
+  }
+  .photo-add-btn {
+    width: 110px; height: 90px;
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--stone-light);
+    font-size: 11px;
+    gap: 4px;
+    transition: all 0.2s;
+    background: transparent;
+  }
+  .photo-add-btn:hover {
+    border-color: var(--earth-light);
+    color: var(--earth);
+    background: var(--earth-pale);
+  }
+
+  .card-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 18px 14px;
+    gap: 8px;
+  }
+
+  /* ========== EMPTY STATE ========== */
+  .empty-state {
+    text-align: center;
+    padding: 80px 40px;
+    color: var(--text-light);
+  }
+  .empty-state .empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.4;
+  }
+  .empty-state h3 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 400;
+    font-size: 20px;
+    color: var(--stone);
+    margin-bottom: 8px;
+  }
+  .empty-state p {
+    font-size: 14px;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  /* ========== TABS ========== */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 20px;
+    background: var(--border);
+    border-radius: var(--radius);
+    padding: 3px;
+    width: fit-content;
+  }
+  .tab {
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    color: var(--text-light);
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+    transition: all 0.15s;
+  }
+  .tab.active {
+    background: var(--surface);
+    color: var(--earth);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .tab:hover:not(.active) { color: var(--text); }
+
+  /* ========== PDF PREVIEW ========== */
+  .pdf-preview {
+    background: white;
+    max-width: 794px;
+    margin: 0 auto;
+    box-shadow: var(--shadow-lg);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  /* Hidden PDF template */
+  #pdf-content {
+    display: none;
+  }
+
+  .pdf-page {
+    font-family: 'Playfair Display', Georgia, serif;
+    padding: 50px 55px;
+    color: #2C2A25;
+    font-size: 11pt;
+    line-height: 1.55;
+  }
+  .pdf-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2.5px solid #8B6914;
+    padding-bottom: 18px;
+    margin-bottom: 28px;
+  }
+  .pdf-header-left h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18pt;
+    color: #8B6914;
+    margin-bottom: 2px;
+    font-weight: 400;
+  }
+  .pdf-header-left p {
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+    font-size: 9pt;
+    color: #6B6860;
+  }
+  .pdf-header-right {
+    text-align: right;
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+    font-size: 9pt;
+    color: #6B6860;
+  }
+  .pdf-header-right strong {
+    display: block;
+    font-size: 10pt;
+    color: #2C2A25;
+  }
+  .pdf-client-block {
+    background: #FAF6ED;
+    padding: 16px 20px;
+    border-radius: 6px;
+    margin-bottom: 24px;
+    border-left: 4px solid #8B6914;
+  }
+  .pdf-client-block h3 {
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+    font-size: 10pt;
+    font-weight: 600;
+    color: #8B6914;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .pdf-client-block .client-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 24px;
+    font-size: 10pt;
+  }
+  .pdf-intro {
+    margin-bottom: 24px;
+    font-size: 10.5pt;
+    color: #4A4A40;
+  }
+  .pdf-prob {
+    margin-bottom: 22px;
+    page-break-inside: avoid;
+  }
+  .pdf-prob-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #E5E0D5;
+  }
+  .pdf-prob-num {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+  }
+  .pdf-prob-num.urgent { background: #C0392B; }
+  .pdf-prob-num.important { background: #D4740A; }
+  .pdf-prob-num.safe { background: #27AE60; }
+  .pdf-prob-num.watch { background: #B7950B; }
+  .pdf-prob-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 13pt;
+    font-weight: 400;
+    flex: 1;
+  }
+  .pdf-priority-label {
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+    font-size: 8pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .pdf-priority-label.urgent { background: #FDE8E5; color: #C0392B; }
+  .pdf-priority-label.important { background: #FEF0E0; color: #D4740A; }
+  .pdf-priority-label.watch { background: #FEF9E0; color: #B7950B; }
+  .pdf-prob-text {
+    font-size: 10.5pt;
+    color: #3A3A33;
+    margin-bottom: 10px;
+    white-space: pre-wrap;
+  }
+  .pdf-photos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .pdf-photo-container {
+    text-align: center;
+  }
+  .pdf-photos img {
+    max-width: 200px;
+    max-height: 150px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #E5E0D5;
+  }
+  .pdf-photo-legend {
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+    font-size: 8pt;
+    color: #6B6860;
+    font-style: italic;
+    margin-top: 3px;
+  }
+  .pdf-footer {
+    margin-top: 36px;
+    padding-top: 14px;
+    border-top: 1px solid #E5E0D5;
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+    font-size: 8pt;
+    color: #9B9B8A;
+    display: flex;
+    justify-content: space-between;
+  }
+  .pdf-conclusion {
+    background: #F5ECD7;
+    padding: 16px 20px;
+    border-radius: 6px;
+    margin-top: 24px;
+    border-left: 4px solid #8B6914;
+    font-size: 10.5pt;
+    color: #3A3A33;
+    white-space: pre-wrap;
+  }
+  .pdf-conclusion h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 12pt;
+    color: #8B6914;
+    margin-bottom: 6px;
+  }
+
+  /* ========== MODAL ========== */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: var(--shadow-lg);
+  }
+  .modal h3 {
+    font-family: 'Playfair Display', serif;
+    color: var(--earth);
+    font-size: 18px;
+    margin-bottom: 16px;
+    font-weight: 400;
+  }
+  .modal-actions {
+    display: flex; gap: 8px; justify-content: flex-end;
+    margin-top: 20px;
+  }
+
+  /* ========== SCROLL ========== */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--stone-light); }
+
+  /* ========== HOME PAGE ========== */
+  .home-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+  .home-hero {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .home-hero .logo-mark {
+    display: none;
+  }
+  .home-hero h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    color: var(--clay-dark);
+    font-weight: 400;
+    margin: 0 0 6px;
+  }
+  .home-hero p {
+    color: var(--text-light);
+    font-size: 14px;
+  }
+  .gh-connect-box {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+  .gh-connect-box h3 {
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 12px;
+    color: var(--text);
+  }
+  .gh-connect-box .gh-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 13px;
+  }
+  .gh-status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .gh-status-dot.connected { background: #2ECC71; }
+  .gh-status-dot.disconnected { background: #E74C3C; }
+  .gh-input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .gh-input-row input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+    font-size: 13px;
+  }
+  .home-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .home-action-btn {
+    flex: 1;
+    padding: 20px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+  }
+  .home-action-btn:hover {
+    border-color: var(--earth);
+    background: var(--earth-pale);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+  .home-action-btn .action-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+  }
+  .home-action-btn .action-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .home-action-btn .action-desc {
+    font-size: 12px;
+    color: var(--text-light);
+  }
+  .cr-list {
+    margin-top: 8px;
+  }
+  .cr-list-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--clay-dark);
+    margin-bottom: 12px;
+    font-weight: 400;
+  }
+  .cr-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 8px;
+    background: var(--surface);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .cr-list-item:hover {
+    border-color: var(--earth-light);
+    background: var(--earth-pale);
+  }
+  .cr-list-item .cr-item-info {
+    flex: 1;
+  }
+  .cr-list-item .cr-item-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .cr-list-item .cr-item-date {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-top: 2px;
+  }
+  .cr-list-item .cr-item-actions {
+    display: flex;
+    gap: 6px;
+  }
+  .cr-list-empty {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-light);
+    font-size: 13px;
+  }
+  .spinner {
+    display: inline-block;
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-top-color: var(--earth);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ========== RICH EDITOR MODAL ========== */
+  .editor-modal {
+    max-width: 700px;
+    width: 95%;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .editor-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 6px 8px;
+    border: 1.5px solid var(--border);
+    border-bottom: none;
+    background: var(--earth-pale);
+    align-items: center;
+  }
+  .editor-toolbar:first-of-type {
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+  .editor-toolbar button {
+    width: 30px; height: 28px;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .editor-toolbar select {
+    height: 28px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+    font-size: 11px;
+    color: var(--text);
+    background: white;
+    padding: 0 4px;
+    cursor: pointer;
+  }
+  .editor-toolbar input[type="color"] {
+    width: 28px; height: 28px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px;
+    cursor: pointer;
+    background: white;
+  }
+  .editor-toolbar button:hover {
+    background: var(--earth-light);
+    color: white;
+  }
+  .editor-toolbar button.active {
+    background: var(--earth);
+    color: white;
+  }
+  .editor-toolbar .sep {
+    width: 1px;
+    background: var(--border);
+    margin: 2px 4px;
+  }
+  .editor-content {
+    border: 1.5px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+    padding: 16px;
+    min-height: 250px;
+    max-height: 50vh;
+    overflow-y: auto;
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--text);
+    background: white;
+    outline: none;
+  }
+  .editor-content:focus {
+    border-color: var(--earth-light);
+  }
+  .editor-content h1,
+  .editor-content h2,
+  .editor-content h3 {
+    font-family: 'Playfair Display', serif;
+    color: var(--clay-dark);
+  }
+  .editor-content ul, .editor-content ol {
+    padding-left: 24px;
+  }
+  .editor-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin: 8px 0;
+    border: 1px solid var(--border);
+  }
+  .editor-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 10px 0;
+    font-size: 12.5px;
+  }
+  .editor-content td, .editor-content th {
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    text-align: left;
+  }
+  .editor-content th {
+    background: var(--earth-pale);
+    font-weight: 600;
+  }
+  .editor-content blockquote {
+    border-left: 3px solid var(--earth);
+    margin: 10px 0;
+    padding: 8px 16px;
+    color: var(--text-light);
+    background: var(--bg);
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+  .editor-content hr {
+    border: none;
+    border-top: 1.5px solid var(--border);
+    margin: 16px 0;
+  }
+  .obs-preview {
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    font-size: 12.5px;
+    color: var(--text-light);
+    min-height: 36px;
+    cursor: pointer;
+    transition: all 0.15s;
+    line-height: 1.5;
+    overflow: hidden;
+    max-height: 80px;
+  }
+  .obs-preview:hover {
+    border-color: var(--earth-light);
+    background: var(--earth-pale);
+  }
+  .obs-preview:empty::before {
+    content: 'Cliquez pour rédiger...';
+    color: var(--stone-light);
+    font-style: italic;
+  }
+
+  /* ========== SIDEBAR TABS ========== */
+  .sidebar-tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--border);
+    border-radius: var(--radius);
+    padding: 3px;
+    margin-bottom: 16px;
+  }
+  .sidebar-tab {
+    flex: 1;
+    padding: 7px 6px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    color: var(--text-light);
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .sidebar-tab.active {
+    background: var(--surface);
+    color: var(--earth);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .sidebar-tab:hover:not(.active) {
+    color: var(--text);
+  }
+  .sidebar-panel { display: none; }
+  .sidebar-panel.active { display: block; }
+
+  /* ========== TAG FILTER ========== */
+  .tag-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 12px;
+  }
+  .tag-btn {
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    font-size: 11px;
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+    font-weight: 500;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tag-btn:hover {
+    border-color: var(--earth-light);
+    color: var(--earth);
+  }
+  .tag-btn.active {
+    background: var(--earth);
+    color: white;
+    border-color: var(--earth);
+  }
+
+  /* ========== PROB LIB EDIT ========== */
+  .prob-item-lib .prob-edit-btn {
+    width: 24px; height: 24px;
+    border: none; background: transparent;
+    color: var(--stone-light);
+    cursor: pointer; font-size: 13px;
+    border-radius: 4px;
+    display: flex; align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .prob-item-lib .prob-edit-btn:hover {
+    background: var(--earth-pale);
+    color: var(--earth);
+  }
+  .prob-edit-modal textarea {
+    width: 100%;
+    min-height: 180px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    font-family: 'Nunito Sans', 'Avenir', 'Avenir Next', sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--bg);
+    resize: vertical;
+  }
+  .prob-edit-modal textarea:focus {
+    outline: none;
+    border-color: var(--earth-light);
+  }
+  .prob-tags-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-top: 3px;
+  }
+  .prob-tag-small {
+    font-size: 9.5px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background: var(--earth-pale);
+    color: var(--clay-dark);
+    font-weight: 500;
+  }
+
+  /* ========== ANIMATIONS ========== */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .prob-card { animation: fadeIn 0.3s ease; }
+
+  /* ========== NOTIFICATION ========== */
+  .notification {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--earth);
+    color: white;
+    padding: 12px 20px;
+    border-radius: var(--radius);
+    font-size: 13.5px;
+    box-shadow: var(--shadow-lg);
+    z-index: 300;
+    animation: fadeIn 0.3s ease;
+  }
+
+  /* Preview inline */
+  .preview-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .preview-container .pdf-page {
+    background: white;
+    box-shadow: var(--shadow-lg);
+    border-radius: 4px;
+    margin-bottom: 20px;
+  }
+</style>
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html-to-pdfmake@2.4.5/browser.js"></script>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+// ==================== DATA ====================
+const DEFAULT_PROBLEMATIQUES = [
+  {
+    id: 'remontees_capillaires',
+    name: 'Remontées capillaires',
+    tags: ['humidité', 'mur', 'soubassement'],
+    defaultText: `Des traces d'humidité sont visibles en pied de mur, caractéristiques de remontées capillaires. Ce phénomène se produit lorsque l'eau du sol remonte par capillarité dans les maçonneries du soubassement puis dans le pisé.
+
+Les causes possibles sont multiples : enfouissement partiel ou total du soubassement en pierre, présence d'un revêtement de sol imperméable (dalle béton, enrobé, carrelage) empêchant l'évaporation naturelle, ou modification du terrain environnant ayant rehaussé le niveau du sol.
+
+`,
+    defaultTraitement: `Préconisations : il est recommandé de dégager les pieds de murs, de supprimer tout revêtement imperméable sur au minimum 50 cm autour du bâtiment, et de rétablir un sol perméable (gravier, terre battue) permettant l'évaporation naturelle de l'humidité. Un drainage périphérique peut être envisagé si nécessaire.`
+  },
+  {
+    id: 'fissures_structurelles',
+    name: 'Fissures structurelles',
+    tags: ['mur', 'structure', 'fondations'],
+    defaultText: `Des fissures sont observées sur les murs en pisé. Dans le bâti ancien, les fissures sont courantes mais ne sont pas toujours problématiques. Il convient de distinguer les fissures stabilisées (anciennes, non évolutives) des fissures actives (récentes, évolutives).
+
+Les causes possibles incluent : tassements différentiels des fondations, surcharges ponctuelles, ouvertures créées sans précautions, vibrations, ou mouvements de terrain. Les fissures aux angles des ouvertures sont fréquentes et souvent liées à une concentration de contraintes.
+
+`,
+    defaultTraitement: `Préconisations : mise en place de témoins de fissures pour surveiller leur évolution pendant plusieurs mois. Si les fissures sont stabilisées, elles pourront être comblées avec un mortier de terre compatible avec le pisé existant. Si les fissures sont actives, un diagnostic structurel approfondi sera nécessaire avant toute intervention.`
+  },
+  {
+    id: 'enduits_inadaptes',
+    name: 'Enduits inadaptés (ciment)',
+    tags: ['mur', 'enduit', 'humidité'],
+    defaultText: `Des enduits à base de ciment ont été appliqués sur les murs en pisé. Ce type de revêtement est particulièrement néfaste pour les constructions en terre crue car il empêche les échanges hygrométriques naturels du mur (perspirance).
+
+L'humidité se retrouve piégée à l'intérieur du mur, ce qui entraîne une dégradation progressive du pisé derrière l'enduit, souvent invisible de l'extérieur. On observe fréquemment un cloquage ou un décollement de l'enduit ciment, signe que le pisé se dégrade par rétention d'humidité.
+
+`,
+    defaultTraitement: `Préconisations : retirer l'enduit ciment avec précaution (outils manuels, pas de moyens mécaniques lourds qui pourraient endommager le pisé sous-jacent). Après séchage du mur, appliquer un enduit à la chaux aérienne ou un enduit terre, compatibles avec le fonctionnement hygrométrique du pisé. Un enduit en trois couches (gobetis, corps d'enduit, finition) à la chaux est la solution la plus courante et durable.`
+  },
+  {
+    id: 'soubassement',
+    name: 'État du soubassement',
+    tags: ['soubassement', 'humidité', 'structure'],
+    defaultText: `Le soubassement en pierre constitue la base protectrice du mur en pisé, jouant le rôle de "bottes de pluie" qui isolent la terre crue du contact direct avec le sol humide. Son bon état est essentiel à la pérennité de l'ensemble de la structure.
+
+Des dégradations du soubassement ont été observées : joints dégradés, pierres descellées, ou hauteur insuffisante par rapport au niveau du sol actuel. Un soubassement dégradé ou trop bas expose directement le pisé à l'humidité du sol.
+
+`,
+    defaultTraitement: `Préconisations : rejointoyer le soubassement avec un mortier de chaux (pas de ciment). Si le niveau du sol a été rehaussé, envisager un décaissement pour retrouver une hauteur de soubassement suffisante (minimum 30 à 40 cm au-dessus du niveau du sol). Vérifier l'état des pierres et remplacer celles qui sont trop dégradées.`
+  },
+  {
+    id: 'toiture_couverture',
+    name: 'Toiture et couverture',
+    tags: ['toit', 'eau', 'charpente'],
+    defaultText: `La toiture est l'élément de protection principal du mur en pisé. Elle doit assurer une mise hors d'eau efficace et disposer de débords (dépassées) suffisants pour éloigner les eaux de pluie des façades.
+
+Des désordres ont été constatés au niveau de la couverture : tuiles cassées ou déplacées, noues ou solins défectueux, débords de toiture insuffisants, ou gouttières et descentes d'eau défaillantes. Toute infiltration d'eau par la toiture peut avoir des conséquences graves et rapides sur le pisé.
+
+`,
+    defaultTraitement: `Préconisations : révision complète de la couverture, remplacement des éléments défectueux. Vérification et remise en état des gouttières et descentes d'eau pluviale. S'assurer que l'évacuation des eaux se fait loin du pied des murs. Si les débords de toiture sont insuffisants, envisager leur prolongation pour mieux protéger les façades.`
+  },
+  {
+    id: 'erosion_pise',
+    name: 'Érosion du pisé nu',
+    tags: ['mur', 'enduit', 'façade'],
+    defaultText: `Des zones de pisé non protégé (sans enduit ni bardage) présentent des signes d'érosion dus à l'action combinée de la pluie et du vent. L'érosion se manifeste par un creusement progressif de la surface du mur, avec apparition de reliefs en creux entre les lits de damage.
+
+Le degré d'érosion dépend de l'exposition de la façade (les façades ouest et sud-ouest étant les plus exposées aux pluies dominantes) et de la protection offerte par la toiture et l'environnement proche.
+
+`,
+    defaultTraitement: `Préconisations : les zones érodées peuvent être réparées avec un mortier de terre (terre + eau + éventuellement paille) préparé idéalement à partir de terre du site pour assurer une compatibilité optimale. Pour une protection durable, la mise en place d'un enduit à la chaux aérienne ou d'un enduit terre est recommandée sur les façades les plus exposées. Un badigeon à l'eau peut suffire sur les façades abritées.`
+  },
+  {
+    id: 'isolation_inadaptee',
+    name: 'Isolation inadaptée',
+    tags: ['isolation', 'humidité', 'mur'],
+    defaultText: `Une isolation intérieure ou extérieure inadaptée a été mise en place sur les murs en pisé. L'utilisation de matériaux imperméables à la vapeur d'eau (polystyrène, laine de verre avec pare-vapeur, plaques de plâtre avec complexe isolant) crée un point de condensation à l'interface entre l'isolant et le pisé, provoquant une accumulation d'humidité néfaste.
+
+Ce type d'isolation ne respecte pas le fonctionnement hygrométrique du pisé et peut entraîner des pathologies graves : développement de moisissures, dégradation du pisé derrière le doublage, détérioration de l'air intérieur.
+
+`,
+    defaultTraitement: `Préconisations : déposer l'isolation inadaptée et laisser sécher le mur. Privilégier des isolants perspirants (fibre de bois, laine de chanvre, laine de bois) posés avec un vide d'air ou un frein-vapeur hygrovariable. L'isolation par l'extérieur en fibre de bois sous enduit à la chaux constitue souvent la meilleure solution pour le pisé, car elle protège le mur tout en respectant sa perspirance.`
+  },
+  {
+    id: 'abords_batiment',
+    name: 'Abords du bâtiment',
+    tags: ['abords', 'humidité', 'eau'],
+    defaultText: `Les abords immédiats du bâtiment présentent des aménagements incompatibles avec la bonne conservation des murs en pisé. On observe la présence de revêtements imperméables (dalle béton, enrobé bitumeux, carrelage) au pied des murs, empêchant l'évaporation naturelle de l'humidité du sol.
+
+D'autres facteurs aggravants peuvent être présents : terrain en pente dirigeant les eaux de ruissellement vers le bâtiment, végétation trop proche des murs retenant l'humidité, stockage de matériaux contre les façades.
+
+`,
+    defaultTraitement: `Préconisations : supprimer les revêtements imperméables au pied des murs sur une largeur minimale de 50 cm (idéalement 1 m). Rétablir un sol perméable (gravier, terre, gazon). Assurer des pentes de terrain dirigeant les eaux de ruissellement à l'écart du bâtiment. Éloigner la végétation d'au moins 50 cm des façades et dégager tout stockage de matériaux contre les murs.`
+  },
+  {
+    id: 'ventilation',
+    name: 'Ventilation insuffisante',
+    tags: ['ventilation', 'humidité', 'intérieur'],
+    defaultText: `Le bâtiment présente une ventilation insuffisante, ce qui favorise l'accumulation d'humidité dans l'air intérieur et dans les murs. Les constructions en pisé nécessitent un renouvellement d'air régulier pour évacuer l'excès d'humidité et permettre aux murs de jouer leur rôle de régulateur hygrométrique.
+
+L'installation de fenêtres double vitrage très étanches sans système de ventilation compensatoire, la fermeture de bouches d'aération existantes, ou l'absence de VMC dans les pièces humides sont des facteurs aggravants fréquemment rencontrés.
+
+`,
+    defaultTraitement: `Préconisations : mettre en place une ventilation adaptée (VMC simple flux hygroréglable ou double flux). Installer des entrées d'air sur les menuiseries ou dans les pièces sèches. S'assurer d'une aération régulière, notamment dans les pièces humides (cuisine, salle de bain). Vérifier l'existence et le bon fonctionnement des bouches d'aération en parties basses et hautes des murs.`
+  },
+  {
+    id: 'ouvertures_modifications',
+    name: 'Ouvertures et modifications structurelles',
+    tags: ['mur', 'structure', 'ouverture'],
+    defaultText: `Des ouvertures ont été créées ou modifiées dans les murs en pisé sans respect des règles constructives adaptées à ce matériau. La création d'ouvertures dans un mur en pisé nécessite des précautions particulières pour ne pas fragiliser la structure.
+
+On observe des linteaux inadaptés (béton, métal sans précaution), des ouvertures trop proches des angles du bâtiment, ou des agrandissements ayant fragilisé la section de mur restante. Des fissures aux angles des ouvertures témoignent souvent de ces interventions inadaptées.
+
+`,
+    defaultTraitement: `Préconisations : toute nouvelle ouverture ou modification doit être étudiée par un professionnel connaissant le pisé. Privilégier des linteaux en bois. Renforcer si nécessaire les jambages avec des pierres ou des briques de terre cuite. Limiter la taille des ouvertures en fonction de l'épaisseur et de la hauteur du mur. Éviter dans la mesure du possible l'utilisation de matériaux rigides pour les chaînages.`
+  },
+  {
+    id: 'salpetre',
+    name: 'Salpêtre et efflorescences',
+    tags: ['humidité', 'mur', 'intérieur'],
+    defaultText: `Des dépôts blanchâtres (salpêtre, efflorescences salines) sont visibles sur les murs, principalement en partie basse. Ces cristallisations de sels minéraux sont le signe d'une migration d'eau à travers la maçonnerie : l'eau transporte les sels contenus dans la terre ou le soubassement et les dépose en surface lors de l'évaporation.
+
+Le salpêtre est un indicateur fiable de la présence d'humidité excessive dans le mur. Il ne constitue pas en lui-même un danger structurel, mais signale une pathologie humide sous-jacente qu'il convient de traiter. Les causes sont généralement les mêmes que pour les remontées capillaires : soubassement enterré, sol imperméable, ou défaut de ventilation.
+
+`,
+    defaultTraitement: `Préconisations : brosser les efflorescences à sec (ne pas utiliser d'eau qui redissoudrait les sels). Identifier et traiter la source d'humidité avant toute réfection d'enduit. Améliorer la ventilation des pièces concernées. Ne pas appliquer de traitement hydrofuge de surface qui emprisonnerait l'humidité dans le mur.`
+  },
+  {
+    id: 'charpente_planchers',
+    name: 'Charpente et planchers',
+    tags: ['toit', 'charpente', 'structure'],
+    defaultText: `La charpente et les planchers constituent des éléments structurels essentiels du bâtiment en pisé. Les pièces de bois ancrées dans les murs en terre sont des points sensibles : si le mur est humide, le bois à l'interface peut se dégrader (pourrissement, attaque d'insectes xylophages).
+
+L'état de la charpente conditionne directement la protection du pisé. Une charpente déformée ou affaissée peut entraîner des défauts d'étanchéité de la couverture et des infiltrations d'eau dans les murs. Les abouts de poutres et solives encastrés dans le pisé sont particulièrement vulnérables.
+
+`,
+    defaultTraitement: `Préconisations : vérifier l'état des bois de charpente et des planchers, en particulier les abouts encastrés dans les murs. Rechercher des traces d'attaque d'insectes xylophages (petits trous, sciure) ou de champignons (mérule). Si des pièces de bois sont dégradées, les remplacer ou les renforcer en veillant à ne pas fragiliser le mur en pisé. Assurer une ventilation suffisante des combles.`
+  },
+  {
+    id: 'reseaux_encastres',
+    name: 'Réseaux encastrés (eau, élec)',
+    tags: ['mur', 'intérieur', 'eau'],
+    defaultText: `Des réseaux techniques (canalisations d'eau, évacuations, gaines électriques) ont été encastrés dans les murs en pisé. Ces interventions fragilisent le mur par la création de saignées qui réduisent sa section porteuse et peuvent créer des points de concentration de contraintes.
+
+Les canalisations d'eau encastrées représentent un risque particulièrement élevé : la moindre fuite, même minime, peut rester invisible pendant longtemps tout en dégradant progressivement le pisé de l'intérieur. Le mur perd alors sa cohésion sans signe extérieur apparent.
+
+`,
+    defaultTraitement: `Préconisations : privilégier systématiquement le passage des réseaux en apparent ou en gaines techniques rapportées plutôt qu'encastrés dans le pisé. Vérifier l'étanchéité des canalisations existantes encastrées. En cas de rénovation, déplacer les réseaux encastrés vers des solutions apparentes. Pour l'électricité, des goulottes ou plinthes techniques sont préférables aux saignées.`
+  },
+  {
+    id: 'dalle_sol',
+    name: 'Dalle et revêtement de sol intérieur',
+    tags: ['humidité', 'intérieur', 'soubassement'],
+    defaultText: `Le revêtement de sol intérieur joue un rôle important dans l'équilibre hygrométrique du bâtiment en pisé. Une dalle béton coulée directement au sol sans coupure de capillarité empêche l'évaporation naturelle de l'humidité du terrain et la redirige vers les murs, aggravant les remontées capillaires.
+
+Le sol traditionnel d'un bâtiment en pisé est généralement en terre battue, en carreaux de terre cuite posés sur lit de sable, ou en dallage de pierre. Ces sols perspirants participent à la régulation hygrométrique globale du bâtiment. Leur remplacement par une dalle béton étanche rompt cet équilibre.
+
+`,
+    defaultTraitement: `Préconisations : si le sol existant est perspirant, le conserver autant que possible. En cas de réfection, privilégier un hérisson ventilé (lit de galets) recouvert d'une dalle de chaux, plutôt qu'une dalle béton avec film polyane. Pour les pièces humides, prévoir une étanchéité localisée sans compromettre la perspirance de l'ensemble du bâtiment.`
+  },
+  {
+    id: 'trous_banche',
+    name: 'Trous de banche et clés',
+    tags: ['mur', 'façade', 'structure'],
+    defaultText: `Les trous de banche (ou trous de clés) sont les empreintes laissées dans le mur par les traverses de bois qui maintenaient les coffrages lors de la construction. Ces cavités régulièrement espacées sont caractéristiques du pisé et font partie de son identité constructive.
+
+Lorsqu'ils sont ouverts et exposés aux intempéries, les trous de banche peuvent constituer des points d'entrée d'eau dans le mur. L'eau stagnant dans ces cavités pénètre dans le pisé et provoque une dégradation localisée, surtout sur les façades exposées aux pluies dominantes.
+
+`,
+    defaultTraitement: `Préconisations : combler les trous de banche ouverts avec un mortier de terre préparé à partir de terre du site pour une compatibilité optimale. Éviter impérativement le ciment pour le rebouchage. Sur les façades protégées par un enduit, les trous seront naturellement couverts. Sur le pisé apparent, un bouchon de terre légèrement en retrait de la surface est la solution la plus adaptée.`
+  },
+  {
+    id: 'condensation_moisissures',
+    name: 'Condensation et moisissures',
+    tags: ['humidité', 'ventilation', 'intérieur'],
+    defaultText: `Des traces de condensation et/ou de moisissures sont observées sur les parois intérieures, généralement dans les angles, derrière les meubles, ou autour des fenêtres. Ces désordres résultent de la rencontre entre l'air chaud et humide intérieur et des surfaces froides (ponts thermiques, murs non isolés).
+
+Dans un bâtiment en pisé, la condensation peut être aggravée par une isolation inadaptée créant des points froids, une ventilation insuffisante, ou un excès de vapeur d'eau sans évacuation. Le pisé a naturellement une bonne capacité de régulation hygrométrique, mais celle-ci a ses limites.
+
+Préconisations : améliorer la ventilation (VMC ou entrées d'air sur menuiseries). Traiter les ponts thermiques avec des solutions perspirants. Éloigner les meubles des murs extérieurs. Ne pas appliquer de peintures imperméables sur les murs en pisé. Si nécessaire, appliquer un correcteur thermique perspirant (enduit chaux-chanvre, panneau de liège).`
+  },
+  {
+    id: 'biodegradation',
+    name: 'Biodégradation (végétation, insectes)',
+    tags: ['mur', 'abords', 'façade'],
+    defaultText: `Des développements végétaux (lierre, mousse, plantes grimpantes, racines) ou des traces d'activité biologique (insectes, rongeurs) sont observés sur ou dans les murs en pisé. Le lierre, bien que d'apparence protectrice, peut s'avérer néfaste : ses racines pénètrent dans les fissures, retiennent l'humidité et accélèrent la dégradation.
+
+Les galeries creusées par les insectes ou rongeurs dans le pisé fragilisent la structure. Les abeilles solitaires et guêpes maçonnes peuvent créer des cavités significatives. L'accumulation de terre végétale et débris organiques au pied des murs favorise la rétention d'humidité.
+
+`,
+    defaultTraitement: `Préconisations : améliorer la ventilation (VMC ou entrées d'air sur menuiseries). Traiter les ponts thermiques avec des solutions perspirants. Éloigner les meubles des murs extérieurs. Ne pas appliquer de peintures imperméables sur les murs en pisé. Si nécessaire, appliquer un correcteur thermique perspirant (enduit chaux-chanvre, panneau de liège).`
+  },
+  {
+    id: 'vegetation_biologie',
+    name: 'Végétation et activité biologique',
+    tags: ['Biologie', 'Végétation'],
+    defaultText: `Des développements végétaux (lierre, mousse, plantes grimpantes, racines) ou des traces d'activité biologique (insectes, rongeurs) sont observés sur ou dans les murs en pisé. Le lierre, bien que d'apparence protectrice, peut s'avérer néfaste : ses racines pénètrent dans les fissures, retiennent l'humidité et accélèrent la dégradation.`,
+    defaultTraitement: `Préconisations : retirer les végétaux grimpants avec précaution. Couper les racines sans tenter de les extraire du mur. Élaguer la végétation proche pour maintenir 50 cm minimum entre plantations et façades. Combler les galeries d'insectes avec un mortier de terre. Nettoyer régulièrement les pieds de murs de tout amas de terre végétale et débris.`
+  }
+];
+
+// ==================== APP STATE ====================
+let state = {
+  // Client info
+  clientName: '',
+  clientAddress: '',
+  clientCity: '',
+  clientPhone: '',
+  clientEmail: '',
+  visitDate: new Date().toISOString().slice(0, 10),
+  buildingType: 'Maison individuelle',
+  buildingAge: '',
+  buildingFloors: '1',
+  observations: '',
+  conclusion: `Ce compte rendu fait suite à la visite conseil réalisée à la date indiquée. Les préconisations formulées visent à assurer la pérennité du bâtiment en pisé tout en respectant les caractéristiques intrinsèques de ce matériau (perspirance, inertie thermique, régulation hygrométrique).
+
+Il est fortement recommandé de faire appel à des artisans et entreprises spécialisés dans le bâti ancien et la terre crue pour la réalisation des travaux. L'atelier reste à votre disposition pour tout complément d'information ou accompagnement dans la suite de votre projet.`,
+  
+  // Selected problematiques
+  selectedProbs: [],
+  // Prob data (editable texts, priorities, photos)
+  probData: {},
+  
+  // UI state
+  currentView: 'home',
+  activeTab: 'edit',
+  sidebarTab: 'client',
+  filterTag: null,
+  editingProbId: null,
+  creatingProb: false,
+  showObsEditor: false,
+  showConcEditor: false,
+  showConclusion: true,
+  introText: '',
+  supabaseReady: false,
+  currentCRId: null,
+  savedCRList: [],
+  loadingGH: false,
+  notification: null,
+  
+  // Library
+  library: [...DEFAULT_PROBLEMATIQUES, ...JSON.parse(localStorage.getItem('cr_custom_probs') || '[]')]
+};
+
+// ==================== HELPERS ====================
+function getState() { return state; }
+function setState(updates) {
+  Object.assign(state, updates);
+  render();
+}
+
+function toggleProb(probId) {
+  const s = getState();
+  const idx = s.selectedProbs.indexOf(probId);
+  if (idx > -1) {
+    s.selectedProbs.splice(idx, 1);
+    delete s.probData[probId];
+  } else {
+    s.selectedProbs.push(probId);
+    const lib = s.library.find(p => p.id === probId);
+    s.probData[probId] = {
+      text: lib ? lib.defaultText : '',
+      traitement: lib ? (lib.defaultTraitement || '') : '',
+      showDesc: true,
+      showTraitement: true,
+      priority: 'important',
+      photos: []
+    };
+  }
+  render();
+}
+
+function updateProbText(probId, text) {
+  state.probData[probId].text = text;
+}
+
+function updateProbTraitement(probId, value) {
+  state.probData[probId].traitement = value;
+}
+
+function updateProbPriority(probId, priority) {
+  state.probData[probId].priority = priority;
+  render();
+}
+
+function addPhotos(probId, files) {
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      state.probData[probId].photos.push({
+        data: e.target.result,
+        legend: file.name.replace(/\.[^.]+$/, ''),
+        id: Date.now() + Math.random()
+      });
+      render();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function removePhoto(probId, photoId) {
+  const photos = state.probData[probId].photos;
+  const idx = photos.findIndex(p => p.id === photoId);
+  if (idx > -1) photos.splice(idx, 1);
+  render();
+}
+
+function updatePhotoLegend(probId, photoId, legend) {
+  const photo = state.probData[probId].photos.find(p => p.id === photoId);
+  if (photo) photo.legend = legend;
+}
+
+function updatePhotoSize(probId, photoId, size) {
+  const photo = state.probData[probId].photos.find(p => p.id === parseFloat(photoId));
+  if (photo) {
+    photo.size = parseInt(size);
+    
+    refreshPdfPreview();
+  }
+}
+
+// ==================== SUPABASE API ====================
+const SUPA_URL = 'https://hcjajtpbzusqgxkyzbgc.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamFqdHBienVzcWd4a3l6YmdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxMTIwNjgsImV4cCI6MjA4NzY4ODA2OH0.UXiZvC3kQmQzZ4BSWp6X19ISPjlac87YZlLonUqzvic';
+
+async function supaFetch(method, path, body) {
+  const resp = await fetch(SUPA_URL + '/rest/v1/' + path, {
+    method: method,
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'return=representation' : ''
+    },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e.message || resp.statusText); }
+  if (resp.status === 204) return null;
+  return resp.json();
+}
+
+async function initSupabase() {
+  try {
+    await loadCRList();
+    state.supabaseReady = true;
+    render();
+  } catch(e) {
+    showNotification('✗ Erreur connexion Supabase');
+  }
+}
+
+async function loadCRList() {
+  try {
+    const data = await supaFetch('GET', 'comptes_rendus?select=id,nom_client,date_visite,updated_at&order=updated_at.desc');
+    state.savedCRList = (data || []).map(r => ({
+      id: r.id,
+      name: r.nom_client || 'Sans nom',
+      date: r.updated_at ? new Date(r.updated_at).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'}) : ''
+    }));
+  } catch(e) {
+    state.savedCRList = [];
+  }
+}
+
+async function saveToGitHub() {
+  showNotification('⏳ Sauvegarde en cours...');
+  
+  const saveData = {
+    clientName: state.clientName,
+    clientAddress: state.clientAddress,
+    clientCity: state.clientCity,
+    clientPhone: state.clientPhone,
+    clientEmail: state.clientEmail,
+    visitDate: state.visitDate,
+    buildingType: state.buildingType,
+    buildingAge: state.buildingAge,
+    buildingFloors: state.buildingFloors,
+    observations: state.observations,
+    selectedProbs: state.selectedProbs,
+    probData: state.probData,
+    conclusion: state.conclusion,
+    library: state.library,
+    savedAt: new Date().toISOString()
+  };
+  
+  try {
+    if (state.currentCRId) {
+      await supaFetch('PATCH', 'comptes_rendus?id=eq.' + state.currentCRId, {
+        nom_client: saveData.clientName || 'Sans nom',
+        date_visite: saveData.visitDate || null,
+        donnees: saveData,
+        updated_at: new Date().toISOString()
+      });
+    } else {
+      const res = await supaFetch('POST', 'comptes_rendus', {
+        nom_client: saveData.clientName || 'Sans nom',
+        date_visite: saveData.visitDate || null,
+        donnees: saveData
+      });
+      if (res && res[0]) state.currentCRId = res[0].id;
+    }
+    showNotification('✓ Sauvegardé');
+    await loadCRList();
+    render();
+  } catch(err) {
+    showNotification('✗ Erreur : ' + err.message);
+  }
+}
+
+async function loadFromGitHub(crId) {
+  showNotification('⏳ Chargement...');
+  try {
+    const data = await supaFetch('GET', 'comptes_rendus?id=eq.' + crId + '&select=id,donnees');
+    if (!data || !data[0]) throw new Error('CR introuvable');
+    const json = data[0].donnees;
+    state.currentCRId = data[0].id;
+    if (json.library) { state.library = json.library; } else { state.library = [...DEFAULT_PROBLEMATIQUES, ...JSON.parse(localStorage.getItem('cr_custom_probs') || '[]')]; }
+    delete json.library;
+    Object.assign(state, json);
+    state.currentView = 'editor';
+    render();
+    showNotification('✓ CR chargé');
+  } catch(err) {
+    showNotification('✗ ' + err.message);
+  }
+}
+
+async function deleteFromGitHub(crId, e) {
+  e.stopPropagation();
+  if (!confirm('Supprimer ce CR ?')) return;
+  try {
+    await supaFetch('DELETE', 'comptes_rendus?id=eq.' + crId);
+    if (state.currentCRId === crId) state.currentCRId = null;
+    showNotification('✓ CR supprimé');
+    await loadCRList();
+    render();
+  } catch(err) {
+    showNotification('✗ ' + err.message);
+  }
+}
+
+function newCR() {
+  state.clientName = '';
+  state.clientAddress = '';
+  state.clientCity = '';
+  state.clientPhone = '';
+  state.clientEmail = '';
+  state.visitDate = '';
+  state.buildingType = 'Maison individuelle';
+  state.buildingAge = '';
+  state.buildingFloors = '';
+  state.observations = '';
+  state.selectedProbs = [];
+  state.probData = {};
+  state.conclusion = '';
+  state.library = [...DEFAULT_PROBLEMATIQUES, ...JSON.parse(localStorage.getItem('cr_custom_probs') || '[]')];
+  state.currentView = 'editor';
+  state.activeTab = 'edit';
+  state.sidebarTab = 'client';
+  render();
+}
+
+function goHome() {
+  state.currentView = 'home';
+  loadCRList().then(() => render());
+}
+
+function openConcEditor() {
+  state.showConcEditor = true;
+  render();
+  setTimeout(() => {
+    const ed = document.getElementById('conc-editor');
+    if (ed) {
+      ed.innerHTML = state.conclusion || '';
+      ed.focus();
+    }
+  }, 50);
+}
+
+function closeConcEditor() {
+  const ed = document.getElementById('conc-editor');
+  if (ed) state.conclusion = ed.innerHTML;
+  state.showConcEditor = false;
+  render();
+}
+
+function openObsEditor() {
+  state.showObsEditor = true;
+  render();
+  setTimeout(() => {
+    const ed = document.getElementById('obs-editor');
+    if (ed) {
+      ed.innerHTML = state.observations || '';
+      ed.focus();
+    }
+  }, 50);
+}
+
+function closeObsEditor() {
+  const ed = document.getElementById('obs-editor');
+  if (ed) state.observations = ed.innerHTML;
+  state.showObsEditor = false;
+  render();
+}
+
+function execCmd(cmd, val) {
+  document.execCommand(cmd, false, val || null);
+  document.getElementById('obs-editor').focus();
+}
+
+function execFontName(sel) {
+  document.execCommand('fontName', false, sel.value);
+  document.getElementById('obs-editor').focus();
+}
+
+function execFontSize(sel) {
+  document.execCommand('fontSize', false, sel.value);
+  document.getElementById('obs-editor').focus();
+}
+
+function execForeColor(input) {
+  document.execCommand('foreColor', false, input.value);
+  document.getElementById('obs-editor').focus();
+}
+
+function execBackColor(input) {
+  document.execCommand('hiliteColor', false, input.value);
+  document.getElementById('obs-editor').focus();
+}
+
+function insertEditorImage() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = function() {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('obs-editor').focus();
+      document.execCommand('insertImage', false, e.target.result);
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+function insertTable() {
+  const cols = prompt('Nombre de colonnes :', '3');
+  const rows = prompt('Nombre de lignes :', '3');
+  if (!cols || !rows) return;
+  const c = parseInt(cols), r = parseInt(rows);
+  if (isNaN(c) || isNaN(r) || c < 1 || r < 1) return;
+  let html = '<table><thead><tr>';
+  for (let j = 0; j < c; j++) html += '<th>En-tête</th>';
+  html += '</tr></thead><tbody>';
+  for (let i = 0; i < r - 1; i++) {
+    html += '<tr>';
+    for (let j = 0; j < c; j++) html += '<td>&nbsp;</td>';
+    html += '</tr>';
+  }
+  html += '</tbody></table><p>&nbsp;</p>';
+  document.getElementById('obs-editor').focus();
+  document.execCommand('insertHTML', false, html);
+}
+
+function insertHR() {
+  document.getElementById('obs-editor').focus();
+  document.execCommand('insertHTML', false, '<hr>');
+}
+
+function insertLink() {
+  const url = prompt('URL du lien :', 'https://');
+  if (url) {
+    document.execCommand('createLink', false, url);
+    document.getElementById('obs-editor').focus();
+  }
+}
+
+function setFilterTag(tag) {
+  state.filterTag = state.filterTag === tag ? null : tag;
+  render();
+}
+
+function getFilteredLibrary() {
+  if (!state.filterTag) return state.library;
+  return state.library.filter(p =>
+    p.tags && p.tags.includes(state.filterTag)
+  );
+}
+
+function getAllTags() {
+  const tags = new Set();
+  state.library.forEach(p => {
+    if (p.tags) p.tags.forEach(t => tags.add(t));
+  });
+  return [...tags].sort();
+}
+
+function openEditProb(probId, e) {
+  e.stopPropagation();
+  state.editingProbId = probId;
+  render();
+}
+
+function closeEditProb() {
+  state.editingProbId = null;
+  render();
+}
+
+function resetEditProb(probId) {
+  const original = DEFAULT_PROBLEMATIQUES.find(p => p.id === probId);
+  if (original) {
+    document.getElementById('lib-edit-ta').value = original.defaultText;
+  }
+}
+
+function saveEditProb(probId) {
+  const ta = document.querySelector('#lib-edit-ta');
+  if (ta) {
+    const prob = state.library.find(p => p.id === probId);
+    if (prob) prob.defaultText = ta.value;
+  }
+  state.editingProbId = null;
+  showNotification('✓ Texte de la bibliothèque mis à jour');
+  render();
+}
+
+function deleteProb(probId, e) {
+  e.stopPropagation();
+  const prob = state.library.find(p => p.id === probId);
+  if (!prob) return;
+  if (!confirm('Supprimer "' + prob.name + '" de la bibliothèque ?')) return;
+  state.library = state.library.filter(p => p.id !== probId);
+  if (state.selectedProbs.includes(probId)) {
+    state.selectedProbs = state.selectedProbs.filter(id => id !== probId);
+    delete state.probData[probId];
+  }
+  const customs = state.library.filter(p => p.isCustom);
+  localStorage.setItem('cr_custom_probs', JSON.stringify(customs));
+  showNotification('✓ Problématique supprimée');
+  render();
+}
+
+function deleteProb(probId, e) {
+  e.stopPropagation();
+  const prob = state.library.find(p => p.id === probId);
+  if (!prob) return;
+  if (!confirm('Supprimer "' + prob.name + '" de la bibliothèque ?')) return;
+  state.library = state.library.filter(p => p.id !== probId);
+  if (state.selectedProbs.includes(probId)) {
+    state.selectedProbs = state.selectedProbs.filter(id => id !== probId);
+    delete state.probData[probId];
+  }
+  const customs = state.library.filter(p => p.isCustom);
+  localStorage.setItem('cr_custom_probs', JSON.stringify(customs));
+  showNotification('✓ Problématique supprimée');
+  render();
+}
+
+function openCreateProb() {
+  state.creatingProb = true;
+  render();
+  setTimeout(() => {
+    const el = document.getElementById('new-prob-name');
+    if (el) el.focus();
+  }, 50);
+}
+
+function closeCreateProb() {
+  state.creatingProb = false;
+  render();
+}
+
+function saveCreateProb() {
+  const name = document.getElementById('new-prob-name').value.trim();
+  const text = document.getElementById('new-prob-text').value.trim();
+  const traitement = document.getElementById('new-prob-traitement').value.trim();
+  const tags = document.getElementById('new-prob-tags').value.trim();
+  if (!name) { showNotification('✗ Donnez un nom à la problématique'); return; }
+  const newProb = {
+    id: 'custom_' + Date.now(),
+    name: name,
+    defaultText: text,
+    defaultTraitement: traitement,
+    tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+    isCustom: true
+  };
+  state.library.push(newProb);
+  const customs = state.library.filter(p => p.isCustom);
+  localStorage.setItem('cr_custom_probs', JSON.stringify(customs));
+  state.creatingProb = false;
+  showNotification('✓ Problématique ajoutée à la bibliothèque');
+  render();
+}
+
+function moveProbUp(probId) {
+  const idx = state.selectedProbs.indexOf(probId);
+  if (idx > 0) {
+    [state.selectedProbs[idx-1], state.selectedProbs[idx]] = [state.selectedProbs[idx], state.selectedProbs[idx-1]];
+    render();
+  }
+}
+function moveProbDown(probId) {
+  const idx = state.selectedProbs.indexOf(probId);
+  if (idx < state.selectedProbs.length - 1) {
+    [state.selectedProbs[idx], state.selectedProbs[idx+1]] = [state.selectedProbs[idx+1], state.selectedProbs[idx]];
+    render();
+  }
+}
+
+function showNotification(msg) {
+  state.notification = msg;
+  render();
+  setTimeout(() => { state.notification = null; render(); }, 2500);
+}
+
+function priorityLabel(p) {
+  return p === 'urgent' ? 'Urgent' : p === 'important' ? 'Important' : p === 'watch' ? 'À surveiller' : 'Sans gravité';
+}
+
+function sortedProbsByPriority() {
+  const order = { urgent: 0, important: 1, watch: 2, safe: 3 };
+  return [...state.selectedProbs].sort((a, b) => {
+    return (order[state.probData[a]?.priority] || 1) - (order[state.probData[b]?.priority] || 1);
+  });
+}
+
+// ==================== SAVE / LOAD ====================
+function exportJSON() {
+  const data = {
+    clientName: state.clientName,
+    clientAddress: state.clientAddress,
+    clientCity: state.clientCity,
+    clientPhone: state.clientPhone,
+    clientEmail: state.clientEmail,
+    visitDate: state.visitDate,
+    buildingType: state.buildingType,
+    buildingAge: state.buildingAge,
+    buildingFloors: state.buildingFloors,
+    observations: state.observations,
+    conclusion: state.conclusion,
+    selectedProbs: state.selectedProbs,
+    probData: state.probData,
+    library: state.library
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const name = state.clientName || 'cr-pise';
+  a.download = `CR_${name.replace(/\s+/g, '_')}_${state.visitDate}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showNotification('✓ Fichier CR exporté');
+}
+
+function importJSON(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      Object.assign(state, data);
+      render();
+      showNotification('✓ CR chargé avec succès');
+    } catch(err) {
+      showNotification('✗ Erreur de chargement');
+    }
+  };
+  reader.readAsText(file);
+}
+
+const LOGO_B64 = 'data:image/png;base64,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';
+
+// ==================== DOCX GENERATION ====================
+function _obsolete_generateDOCX_disabled() {
+  const clientName = state.clientName || 'CR_visite';
+  const today = new Date();
+  const dateStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  const filename = 'AtelierCanabae_' + clientName.replace(/[^a-zA-Z0-9àâäéèêëïîôùûüÿçœæ _-]/g, '').replace(/\s+/g, '_') + '_' + dateStr + '.docx';
+  
+  showNotification('⏳ Génération du document...');
+
+  function b64ToUint8(dataUrl) {
+    const b64 = dataUrl.split(',')[1];
+    const bin = atob(b64);
+    const arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return arr;
+  }
+  const logoData = b64ToUint8(LOGO_B64);
+  const s = state;
+  const { Document, Packer, Paragraph, TextRun, ImageRun, Table, TableRow, TableCell,
+          Header, Footer, AlignmentType, HeadingLevel, BorderStyle, WidthType,
+          ShadingType, VerticalAlign, PageNumber, TabStopType, TabStopPosition,
+          PageBreak } = docx;
+
+  function b64toUint8(b64) {
+    const bin = atob(b64.split(',')[1]);
+    const arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return arr;
+  }
+
+  function priorityColor(p) {
+    return p === 'urgent' ? 'C0392B' : p === 'important' ? 'D4740A' : p === 'watch' ? 'B7950B' : '27AE60';
+  }
+
+  function priorityBg(p) {
+    return p === 'urgent' ? 'FDE8E5' : p === 'important' ? 'FEF0E0' : p === 'watch' ? 'FEF9E0' : 'EAF5EA';
+  }
+
+  function makePara(text, opts = {}) {
+    return new Paragraph({
+      spacing: { after: opts.after ?? 120, before: opts.before ?? 0 },
+      alignment: opts.align || AlignmentType.LEFT,
+      children: [new TextRun({
+        text: text || '',
+        bold: opts.bold || false,
+        italics: opts.italic || false,
+        size: opts.size || 22,
+        color: opts.color || '2C2A25',
+        font: opts.font || 'Calibri',
+      })]
+    });
+  }
+
+  function makeHeading(text, color = '8B6914') {
+    return new Paragraph({
+      spacing: { before: 280, after: 160 },
+      border: { bottom: { style: BorderStyle.SINGLE, size: 8, color: color, space: 4 } },
+      children: [new TextRun({ text, bold: true, size: 28, color, font: 'Calibri' })]
+    });
+  }
+
+  const sortedProbs = sortedProbsByPriority();
+  const children = [];
+
+  // ── EN-TÊTE INFO ──
+  if (logoData) {
+    children.push(new Paragraph({
+      spacing: { after: 80 },
+      children: [new ImageRun({ data: logoData, transformation: { width: 120, height: 40 }, type: 'png' })]
+    }));
+  } else {
+    children.push(new Paragraph({
+      spacing: { after: 40 },
+      children: [new TextRun({ text: 'Atelier Canabae', bold: true, size: 28, color: '8B6914', font: 'Calibri' })]
+    }));
+  }
+  children.push(makePara('Alix Moreau architecte DE-HMONP', { size: 18, color: '6B6860' }));
+  children.push(makePara('DSA architecture de terre, cultures constructives et développement durable', { size: 18, color: '6B6860' }));
+  children.push(makePara('5, allée Susan SONTAG — 69 002 Lyon', { size: 18, color: '6B6860' }));
+  children.push(makePara('06 51 21 31 31 · a.moreau@ateliercanabae.com · www.ateliercanabae.com', { size: 18, color: '6B6860', after: 200 }));
+
+  // ── TITRE ──
+  children.push(new Paragraph({
+    spacing: { before: 200, after: 80 },
+    alignment: AlignmentType.CENTER,
+    children: [new TextRun({ text: 'Compte Rendu de Visite Conseil', bold: true, size: 36, color: '8B6914', font: 'Calibri' })]
+  }));
+  children.push(new Paragraph({
+    spacing: { after: 320 },
+    alignment: AlignmentType.CENTER,
+    children: [new TextRun({ text: 'Diagnostic pisé', size: 24, color: '6B6860', italics: true, font: 'Calibri' })]
+  }));
+
+  // ── BLOC CLIENT ──
+  children.push(makeHeading('Informations du bien'));
+  const clientRows = [
+    ['Client', s.clientName || '—', 'Type', s.buildingType || '—'],
+    ['Adresse', (s.clientAddress || '—') + ' ' + (s.clientCity || ''), 'Époque', s.buildingAge || '—'],
+    ['Téléphone', s.clientPhone || '—', 'Niveaux', s.buildingFloors || '—'],
+    ['Email', s.clientEmail || '—', 'Date visite', s.visitDate ? new Date(s.visitDate).toLocaleDateString('fr-FR') : '—'],
+  ];
+  const cellBorder = { style: BorderStyle.SINGLE, size: 1, color: 'E5E0D5' };
+  const cellBorders = { top: cellBorder, bottom: cellBorder, left: cellBorder, right: cellBorder };
+  children.push(new Table({
+    width: { size: 9026, type: WidthType.DXA },
+    columnWidths: [1800, 2700, 1800, 2726],
+    rows: clientRows.map(row => new TableRow({
+      children: [
+        new TableCell({ borders: cellBorders, shading: { fill: 'FAF6ED', type: ShadingType.CLEAR }, width: { size: 1800, type: WidthType.DXA }, margins: { top: 60, bottom: 60, left: 100, right: 100 }, children: [new Paragraph({ children: [new TextRun({ text: row[0], bold: true, size: 18, color: '8B6914', font: 'Calibri' })] })] }),
+        new TableCell({ borders: cellBorders, width: { size: 2700, type: WidthType.DXA }, margins: { top: 60, bottom: 60, left: 100, right: 100 }, children: [new Paragraph({ children: [new TextRun({ text: row[1], size: 18, font: 'Calibri' })] })] }),
+        new TableCell({ borders: cellBorders, shading: { fill: 'FAF6ED', type: ShadingType.CLEAR }, width: { size: 1800, type: WidthType.DXA }, margins: { top: 60, bottom: 60, left: 100, right: 100 }, children: [new Paragraph({ children: [new TextRun({ text: row[2], bold: true, size: 18, color: '8B6914', font: 'Calibri' })] })] }),
+        new TableCell({ borders: cellBorders, width: { size: 2726, type: WidthType.DXA }, margins: { top: 60, bottom: 60, left: 100, right: 100 }, children: [new Paragraph({ children: [new TextRun({ text: row[3], size: 18, font: 'Calibri' })] })] }),
+      ]
+    }))
+  }));
+
+  // ── INTRO ──
+  children.push(new Paragraph({ spacing: { before: 280, after: 80 }, children: [] }));
+  children.push(new Paragraph({
+    spacing: { after: 160 },
+    children: [new TextRun({ text: "L'objectif de ce rapport est d'identifier les pathologies de la maçonnerie de pierre et pisé, de hiérarchiser leurs degrés d'importance et de proposer des solutions adaptées à la conservation du bâti. L'étude se base sur les observations faites à la date mentionnée ci-dessus. Seules les pathologies visibles en l'état seront inventoriées et commentées.", italics: true, size: 20, color: '555555', font: 'Calibri' })]
+  }));
+  if (s.observations) {
+    children.push(new Paragraph({
+      spacing: { after: 160 },
+      children: [
+        new TextRun({ text: 'Observations générales : ', bold: true, size: 20, font: 'Calibri' }),
+        new TextRun({ text: s.observations.replace(/<[^>]+>/g, ''), size: 20, font: 'Calibri' })
+      ]
+    }));
+  }
+
+  // ── PROBLÉMATIQUES ──
+  children.push(makeHeading('Diagnostic et préconisations'));
+
+  sortedProbs.forEach((probId, i) => {
+    const lib = s.library.find(p => p.id === probId);
+    const data = s.probData[probId];
+    if (!lib || !data) return;
+    const pColor = priorityColor(data.priority);
+    const pBg = priorityBg(data.priority);
+    const pLabel = priorityLabel(data.priority);
+
+    // Titre problématique
+    children.push(new Paragraph({
+      spacing: { before: 280, after: 100 },
+      children: [
+        new TextRun({ text: `${i+1}. `, bold: true, size: 24, color: pColor, font: 'Calibri' }),
+        new TextRun({ text: lib.name, bold: true, size: 24, color: '2C2A25', font: 'Calibri' }),
+        new TextRun({ text: `  [${pLabel}]`, bold: true, size: 18, color: pColor, font: 'Calibri' }),
+      ]
+    }));
+
+    // Texte diagnostic
+    if (data.text && data.showDesc !== false) {
+      const lines = data.text.split('\n').filter(l => l.trim() !== '');
+      lines.forEach(line => {
+        children.push(new Paragraph({
+          spacing: { after: 80 },
+          children: [new TextRun({ text: line, size: 20, color: '3A3A33', font: 'Calibri' })]
+        }));
+      });
+    }
+
+    // Texte traitement
+    if (data.traitement && data.showTraitement !== false) {
+      children.push(new Paragraph({
+        spacing: { before: 120, after: 60 },
+        children: [new TextRun({ text: 'Traitement préconisé', bold: true, size: 20, color: '555555', font: 'Calibri' })]
+      }));
+      const tlines = data.traitement.split('\n').filter(l => l.trim() !== '');
+      tlines.forEach(line => {
+        children.push(new Paragraph({
+          spacing: { after: 80 },
+          children: [new TextRun({ text: line, size: 20, color: '3A3A33', font: 'Calibri' })]
+        }));
+      });
+    }
+
+    // Photos
+    if (data.photos && data.photos.length > 0) {
+      data.photos.forEach(photo => {
+        try {
+          const imgData = b64toUint8(photo.data);
+          const ext = photo.data.includes('image/png') ? 'png' : 'jpg';
+          const w = Math.min(photo.size || 150, 300);
+          const h = Math.round(w * 0.75);
+          children.push(new Paragraph({
+            spacing: { after: 40 },
+            children: [new ImageRun({ data: imgData, transformation: { width: w, height: h }, type: ext })]
+          }));
+          if (photo.legend) {
+            children.push(new Paragraph({
+              spacing: { after: 120 },
+              children: [new TextRun({ text: photo.legend, italics: true, size: 16, color: '6B6860', font: 'Calibri' })]
+            }));
+          }
+        } catch(e) { console.warn('Photo ignorée:', e); }
+      });
+    }
+  });
+
+  // ── CONCLUSION ──
+  if (s.showConclusion !== false && s.conclusion) {
+    children.push(makeHeading('Conclusion et recommandations'));
+    const concText = s.conclusion.replace(/<[^>]+>/g, '');
+    concText.split('\n').filter(l => l.trim()).forEach(line => {
+      children.push(makePara(line, { size: 20, after: 100 }));
+    });
+  }
+
+  // ── RÉSEAUX ARTISANS ──
+  children.push(makeHeading('Réseaux artisans', '1E8449'));
+  children.push(makePara("Pour la réalisation des travaux, je recommande de faire appel à des artisans maîtrisant la construction traditionnelle :", { size: 20, after: 80 }));
+  children.push(makePara('- OIKOS : https://oikos-ecoconstruction.com/reseau-oikos/annuaire-pro/', { size: 20, after: 60 }));
+  children.push(makePara('- Réseau Cabestan : https://www.cabestan.fr/spip.php?page=annuaire', { size: 20, after: 60 }));
+  children.push(makePara('- ASTERRE : https://www.asterre.org/les-pros-asterre/', { size: 20, after: 160 }));
+  children.push(makePara("L'ensemble des images et illustrations de ce compte rendu sont extraites de l'ouvrage Réhabiliter le pisé, vers des pratiques adaptées (ACTES SUD / CRATERRE).", { size: 18, italic: true, color: '6B6860', after: 80 }));
+
+  // ── DOCUMENT ──
+  const doc = new Document({
+    sections: [{
+      properties: {
+        page: {
+          size: { width: 11906, height: 16838 },
+          margin: { top: 1134, right: 1134, bottom: 1134, left: 1134 }
+        }
+      },
+      headers: {
+        default: new Header({
+          children: [new Paragraph({
+            border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: '8B6914', space: 4 } },
+            spacing: { after: 0 },
+            children: [
+              new TextRun({ text: 'Atelier Canabae  —  Compte rendu pisé', size: 16, color: '8B6914', font: 'Calibri' }),
+              new TextRun({ text: `  |  ${s.clientName || ''}  |  ${s.visitDate ? new Date(s.visitDate).toLocaleDateString('fr-FR') : ''}`, size: 16, color: '9B9B8A', font: 'Calibri' }),
+            ]
+          })]
+        })
+      },
+      footers: {
+        default: new Footer({
+          children: [new Paragraph({
+            border: { top: { style: BorderStyle.SINGLE, size: 6, color: 'E5E0D5', space: 4 } },
+            spacing: { before: 0 },
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({ text: 'Atelier Canabae — 5, allée Susan Sontag — 69002 Lyon — contact@ateliercanabae.com', size: 16, color: '9B9B8A', font: 'Calibri' }),
+            ]
+          })]
+        })
+      },
+      children
+    }]
+  });
+
+  Packer.toBlob(doc).then(blob => {
+    saveAs(blob, filename);
+    showNotification('✓ Document téléchargé : ' + filename);
+  }).catch(err => {
+    console.error(err);
+    showNotification('✗ Erreur génération DOCX');
+  });
+}
+
+function buildPrintPage_UNUSED(content) {
+  return `<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8">
+<title>CR ${state.clientName || 'Visite'}</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
+@page { size: A4; margin: 12mm 0mm; }
+body { margin:0; padding:0; background:white; }
+.pdf-page { font-family:'Nunito Sans', 'Avenir Next', 'Avenir', sans-serif; padding:40px 50px; color:#2C2A25; font-size:11pt; line-height:1.55; max-width:794px; margin:0 auto; }
+.pdf-header { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2.5px solid #8B6914; padding-bottom:18px; margin-bottom:28px; }
+.pdf-header-left h1 { font-family:'Playfair Display',serif; font-size:18pt; color:#8B6914; margin:0 0 2px 0; font-weight:400; }
+.pdf-header-left p { font-family:'Nunito Sans', 'Avenir', 'Avenir Next',sans-serif; font-size:9pt; color:#6B6860; margin:0; }
+.pdf-header-right { text-align:right; font-family:'Nunito Sans', 'Avenir', 'Avenir Next',sans-serif; font-size:9pt; color:#6B6860; }
+.pdf-header-right strong { display:block; font-size:10pt; color:#2C2A25; }
+.pdf-client-block { background:#FAF6ED; padding:16px 20px; border-radius:6px; margin-bottom:24px; border-left:4px solid #8B6914; }
+.pdf-client-block h3 { font-family:'Nunito Sans', 'Avenir', 'Avenir Next',sans-serif; font-size:10pt; font-weight:600; color:#8B6914; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 6px 0; }
+.client-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px 24px; font-size:10pt; }
+.pdf-intro { margin-bottom:24px; font-size:10.5pt; color:#4A4A40; }
+.pdf-intro p { margin:0; }
+.pdf-prob { margin-bottom:22px; }
+.pdf-prob-header { display:flex; align-items:center; gap:10px; margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid #E5E0D5; margin-top:16px; }
+.pdf-prob-num { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Nunito Sans', 'Avenir', 'Avenir Next',sans-serif; font-size:11px; font-weight:700; color:white; flex-shrink:0; }
+.pdf-prob-num.urgent { background:#C0392B; }
+.pdf-prob-num.important { background:#D4740A; }
+.pdf-prob-num.watch { background:#B7950B; }
+.pdf-prob-title { font-family:'Playfair Display',serif; font-size:13pt; font-weight:400; flex:1; }
+.pdf-priority-label { font-family:'Nunito Sans', 'Avenir', 'Avenir Next',sans-serif; font-size:8pt; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; padding:2px 8px; border-radius:10px; }
+.pdf-priority-label.urgent { background:#FDE8E5; color:#C0392B; }
+.pdf-priority-label.important { background:#FEF0E0; color:#D4740A; }
+.pdf-priority-label.watch { background:#FEF9E0; color:#B7950B; }
+.pdf-priority-label.safe { background:#EAF5EA; color:#27AE60; }
+.pdf-prob-text { font-size:10.5pt; color:#3A3A33; margin-bottom:10px; white-space:pre-wrap; }
+.pdf-photos { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+.pdf-photo-container { text-align:center; }
+.pdf-photos img { object-fit:cover; border-radius:4px; border:1px solid #E5E0D5; }
+.pdf-photo-legend { font-family:'Nunito Sans', 'Avenir', 'Avenir Next',sans-serif; font-size:8pt; color:#6B6860; font-style:italic; margin-top:3px; }
+.pdf-artisans { background:#EAF2EA; padding:16px 20px; border-radius:6px; margin-top:24px; border-left:4px solid #27AE60; }
+.pdf-artisans h3 { font-family:'Playfair Display',serif; font-size:12pt; color:#1E8449; margin:0 0 8px 0; }
+.pdf-artisans p { font-size:9.5pt; color:#2C3E2D; margin:4px 0; line-height:1.5; }
+.pdf-artisans a { color:#1E8449; text-decoration:none; }
+.pdf-conclusion { background:#F5ECD7; padding:8px 16px; border-radius:6px; margin-top:12px; border-left:4px solid #8B6914; font-size:10.5pt; color:#3A3A33; }
+.pdf-conclusion h3 { font-family:'Playfair Display',serif; font-size:12pt; color:#8B6914; margin:0 0 4px 0; }
+.pdf-footer { margin-top:36px; padding-top:14px; border-top:1px solid #E5E0D5; font-family:'Nunito Sans', 'Avenir', 'Avenir Next',sans-serif; font-size:8pt; color:#9B9B8A; display:flex; justify-content:space-between; }
+@media print { body { -webkit-print-color-adjust:exact; print-color-adjust:exact; } }
+</style>
+</head><body>
+${content}
+</body></html>`;
+}
+
+function downloadPDF() {
+  try {
+    pdfMake.createPdf(buildPdfMakeDoc()).download('CR-Pise-' + (state.clientName || 'Atelier-Canabae') + '.pdf');
+  } catch(e) {
+    console.error('pdfmake error:', e);
+    showNotification('Erreur génération PDF : ' + e.message);
+  }
+}
+
+function htmlToNodes(html) {
+  if (!html) return [{ text: '' }];
+  try {
+    const result = htmlToPdfmake(html, { defaultStyles: { b: { bold: true }, strong: { bold: true }, p: { font: 'Roboto' }, span: { font: 'Roboto' }, li: { font: 'Roboto' }, h1: { font: 'Roboto' }, h2: { font: 'Roboto' }, h3: { font: 'Roboto' } } });
+    const nodes = Array.isArray(result) ? result : (result && result.content ? result.content : []);
+    return nodes.length > 0 ? nodes : [{ text: html.replace(/<[^>]+>/g, '') }];
+  } catch(e) {
+    return [{ text: html.replace(/<[^>]+>/g, '') }];
+  }
+}
+
+function buildPdfMakeDoc() {
+  const s = state;
+  const c = pdfCfg;
+  const sortedProbs = sortedProbsByPriority();
+  const logoB64 = LOGO_B64;
+  const mm = v => v * 2.8346;
+
+  function txt(text, style) {
+    return Object.assign({ text: text || '' }, style || {});
+  }
+
+  const probsContent = [];
+  sortedProbs.forEach((probId, i) => {
+    const lib = s.library.find(p => p.id === probId);
+    const data = s.probData[probId];
+    if (!lib || !data) return;
+    const priorityColors = { urgent: '#C0392B', important: '#E67E22', surveillance: '#27AE60' };
+    const priorityLabels = { urgent: 'URGENT', important: 'IMPORTANT', surveillance: 'SURVEILLANCE' };
+    const color = priorityColors[data.priority] || '#888';
+
+    probsContent.push({ margin: [0, c.probSpacingBefore || 14, 0, 0], columns: [
+      { width: 22, margin: [0, 0, 0, 0], stack: [
+        { canvas: [{ type: 'ellipse', x: 11, y: 8, r1: 10, r2: 10, color }] },
+        { text: String(i+1), fontSize: 9, bold: true, color: 'white', alignment: 'center', margin: [0, -16, 0, 0] }
+      ]},
+      { width: '*', margin: [8, -2, 0, 0], stack: [
+        { columns: [
+          { width: '*', text: lib.name, fontSize: c.probTitleFontSize || 13, bold: true, margin: [0, 0, 0, c.probTitleMarginBottom || 4] },
+          { width: 'auto', table: { body: [[{ text: priorityLabels[data.priority] || '', fontSize: 7.5, bold: true, color: 'white', fillColor: color, margin: [4, 2, 4, 2], border: [false,false,false,false] }]] }, layout: 'noBorders', margin: [6, 0, 0, 0] }
+        ]}
+      ]}
+    ]});
+
+    if (data.text && data.showDesc !== false) {
+      probsContent.push({ text: data.text, fontSize: c.diagFontSize || 10.5, lineHeight: c.diagLineHeight || 1.55, margin: [0, 4, 0, 0] });
+    }
+    if (data.traitement && data.showTraitement !== false) {
+      probsContent.push({ text: 'Traitement préconisé', fontSize: 9, bold: true, margin: [0, 6, 0, 2], color: '#666' });
+      probsContent.push({ text: data.traitement, fontSize: c.traitFontSize || 10, lineHeight: c.traitLineHeight || 1.5 });
+    }
+    if (data.photos && data.photos.length > 0) {
+      const rows = [];
+      let currentRow = [];
+      data.photos.forEach(p => {
+        const isLarge = (parseInt(p.size) || 150) >= 400;
+        if (isLarge) {
+          if (currentRow.length > 0) { rows.push(currentRow); currentRow = []; }
+          rows.push([{ stack: [{ image: p.data, width: 495 }, { text: p.legend || '', fontSize: 8, color: '#666', margin: [0, 2, 0, 0] }], width: 495 }]);
+        } else {
+          currentRow.push({ stack: [{ image: p.data, width: 155 }, { text: p.legend || '', fontSize: 8, color: '#666', margin: [0, 2, 0, 0] }], width: 163 });
+          if (currentRow.length === 3) { rows.push(currentRow); currentRow = []; }
+        }
+      });
+      if (currentRow.length > 0) rows.push(currentRow);
+      rows.forEach(row => {
+        probsContent.push({ columns: row, columnGap: 8, margin: [0, 6, 0, 0] });
+      });
+    }
+    probsContent.push({ margin: [0, 0, 0, c.probSpacingAfter || 8], text: '' });
+  });
+
+  const docDef = {
+    pageSize: 'A4',
+    pageMargins: [mm(c.marginLeft), mm(c.marginTop), mm(c.marginRight), mm(c.marginBottom)],
+    defaultStyle: { font: 'Roboto', fontSize: c.introFontSize || 10, lineHeight: c.introLineHeight || 1.55, color: '#2C2A25' },
+    content: [
+      { columns: [
+        { stack: [
+          { image: logoB64, width: 100, margin: [0, 0, 0, 6] },
+          { text: 'Alix Moreau architecte DE-HMONP', fontSize: c.headerFontSize || 9 },
+          { text: 'DSA architecture de terre, cultures constructives et développement durable', fontSize: c.headerFontSize || 9 },
+          { text: '5, allée Susan SONTAG — 69 002 Lyon', fontSize: c.headerFontSize || 9 },
+          { text: '06 51 21 31 31 · a.moreau@ateliercanabae.com', fontSize: c.headerFontSize || 9 },
+          { text: 'SIREN 808 384 440', fontSize: c.headerFontSize || 9 },
+        ]},
+        { stack: [
+          { text: 'Compte rendu de visite conseil', bold: true, alignment: 'right', fontSize: c.headerFontSize || 9 },
+          { text: 'Diagnostic pisé', alignment: 'right', fontSize: c.headerFontSize || 9 },
+          { text: 'Date : ' + (s.visitDate ? new Date(s.visitDate).toLocaleDateString('fr-FR') : '—'), alignment: 'right', fontSize: c.headerFontSize || 9 },
+        ]}
+      ], margin: [0, 0, 0, 12] },
+
+      { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 0.5, lineColor: '#C4A882' }], margin: [0, 0, 0, 10] },
+
+      {
+        margin: [0, 0, 0, 12],
+        table: {
+          widths: ['*'],
+          body: [[{
+            border: [false,false,false,false],
+            fillColor: '#F5F1EA',
+            margin: [10,8,10,8],
+            stack: [
+              { text: 'INFORMATIONS DU BIEN', bold: true, fontSize: c.clientFontSize || 10, color: '#8B6914', margin: [0,0,0,6] },
+              { columns: [
+                { stack: [
+                  { text: [{ text: 'Client : ', bold: true }, s.clientName || '-'], fontSize: c.clientFontSize || 10 },
+                  { text: [{ text: 'Adresse : ', bold: true }, (s.clientAddress || '-') + ' ' + (s.clientCity || '')], fontSize: c.clientFontSize || 10 },
+                  { text: [{ text: 'Tel : ', bold: true }, s.clientPhone || '-'], fontSize: c.clientFontSize || 10 },
+                  { text: [{ text: 'Email : ', bold: true }, s.clientEmail || '-'], fontSize: c.clientFontSize || 10 }
+                ]},
+                { stack: [
+                  { text: [{ text: 'Type : ', bold: true }, s.buildingType || '-'], fontSize: c.clientFontSize || 10 },
+                  { text: [{ text: 'Epoque : ', bold: true }, s.buildingAge || '-'], fontSize: c.clientFontSize || 10 },
+                  { text: [{ text: 'Niveaux : ', bold: true }, s.buildingFloors || '-'], fontSize: c.clientFontSize || 10 }
+                ]}
+              ]}
+            ]
+          }]]
+        }
+      },
+
+      { text: "L'objectif de ce rapport est d'identifier les pathologies de la maçonnerie de pierre et pisé, de hiérarchiser leurs degrés d'importance et de proposer des solutions adaptées à la conservation du bâti.", italics: true, color: '#555', fontSize: c.introFontSize || 10, margin: [0, 0, 0, 6] },
+      s.introText ? { text: s.introText, fontSize: c.introFontSize || 10, margin: [0, 0, 0, 4] } : null,
+      s.observations ? { stack: [{ text: 'Observations générales :', bold: true, fontSize: c.introFontSize || 10, margin: [0, 0, 0, 2] }, ...htmlToNodes(s.observations)], margin: [0, 0, 0, 8] } : null,
+
+      ...probsContent.filter(Boolean),
+
+      s.showConclusion !== false && s.conclusion ? { stack: [
+        { text: 'Conclusion et recommandations', fontSize: c.conclusionFontSize || 10.5, bold: true, margin: [0, 12, 0, 4] },
+        { stack: htmlToNodes(s.conclusion) }
+      ]} : null,
+
+      { text: 'III Réseaux artisans', fontSize: c.artisansFontSize || 9.5, bold: true, margin: [0, 12, 0, 4] },
+      { text: 'Pour la réalisation des travaux, je recommande de faire appel à des artisans maîtrisant la construction traditionnelle. Des annuaires d\'artisans qualifiés sont disponibles sur les sites :', fontSize: c.artisansFontSize || 9.5, lineHeight: c.artisansLineHeight || 1.5, margin: [0, 0, 0, 4] },
+      { text: '- ASTERRE : asterre.org/les-pros-asterre', fontSize: c.artisansFontSize || 9.5, color: '#1E8449', margin: [8, 0, 0, 2] },
+      { text: '- RFCP : rfcp.fr', fontSize: c.artisansFontSize || 9.5, color: '#1E8449', margin: [8, 0, 0, 4] },
+      { text: 'Si les artisans proposés sur ces listes ne sont pas disponibles ou trop onéreux, il est tout à fait possible de faire appel à des artisans conventionnels, il faudra alors être vigilant au respect des règles de l\'art et à la bonne réalisation des ouvrages.', fontSize: c.artisansFontSize || 9.5, lineHeight: c.artisansLineHeight || 1.5 },
+    ].filter(Boolean),
+  };
+  return docDef;
+}
+
+function buildPDFHTML() {
+  const s = state;
+  const sortedProbs = sortedProbsByPriority();
+  
+  let probsHTML = '';
+  sortedProbs.forEach((probId, i) => {
+    const lib = s.library.find(p => p.id === probId);
+    const data = s.probData[probId];
+    if (!lib || !data) return;
+    
+    let photosHTML = '';
+    if (data.photos.length > 0) {
+      photosHTML = '<div class="pdf-photos">' + data.photos.map(p => 
+        `<div class="pdf-photo-container">
+          <img src="${p.data}" style="width:${p.size||150}px; height:${Math.round((p.size||150)*0.75)}px; object-fit:cover;" />
+          <div class="pdf-photo-legend">${p.legend}</div>
+        </div>`
+      ).join('') + '</div>';
+    }
+    
+    probsHTML += `
+      <div class="pdf-prob">
+        <div class="pdf-prob-header">
+          <div class="pdf-prob-num ${data.priority}">${i+1}</div>
+          <div class="pdf-prob-title">${lib.name}</div>
+          <span class="pdf-priority-label ${data.priority}">${priorityLabel(data.priority)}</span>
+        </div>
+        ${data.text && data.showDesc!==false ? `<div class="pdf-prob-text">${data.text}</div>` : ''}
+        ${data.traitement && data.showTraitement!==false ? `<div style="margin-top:6px;"><span style="font-size:9pt;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#666;">Traitement préconisé</span><div class="pdf-prob-text" style="margin-top:3px;">${data.traitement}</div></div>` : ''}
+        ${photosHTML}
+      </div>
+    `;
+  });
+
+  return `
+    <div class="pdf-page">
+      <div class="pdf-header">
+        <div class="pdf-header-left">
+          <img src="https://raw.githubusercontent.com/gadmy/atelier-canabae-crm/main/LogoAtelieCanabae.png" alt="Atelier Canabae" style="height:50px;margin-bottom:8px;display:block;">
+          <p style="margin:1px 0;">Alix Moreau architecte DE-HMONP</p>
+          <p style="margin:1px 0;">DSA architecture de terre, cultures constructives et développement durable</p>
+          <p style="margin:1px 0;">5, allée Susan SONTAG — 69 002 Lyon</p>
+          <p style="margin:1px 0;">06 51 21 31 31 · a.moreau@ateliercanabae.com · www.ateliercanabae.com</p>
+          <p style="margin:1px 0;">SIREN 808 384 440</p>
+        </div>
+        <div class="pdf-header-right">
+          <strong>Compte rendu de visite conseil</strong>
+          <p>Diagnostic pisé</p>
+          <p>Date : ${s.visitDate ? new Date(s.visitDate).toLocaleDateString('fr-FR') : '—'}</p>
+        </div>
+      </div>
+
+      <div class="pdf-client-block">
+        <h3>Informations du bien</h3>
+        <div class="client-grid">
+          <div><strong>Client :</strong> ${s.clientName || '—'}</div>
+          <div><strong>Type :</strong> ${s.buildingType || '—'}</div>
+          <div><strong>Adresse :</strong> ${s.clientAddress || '—'} ${s.clientCity || ''}</div>
+          <div><strong>Époque :</strong> ${s.buildingAge || '—'}</div>
+          <div><strong>Tél :</strong> ${s.clientPhone || '—'}</div>
+          <div><strong>Niveaux :</strong> ${s.buildingFloors || '—'}</div>
+          <div><strong>Email :</strong> ${s.clientEmail || '—'}</div>
+          <div></div>
+        </div>
+      </div>
+
+      <div class="pdf-intro">
+        <p style="font-style:italic;color:#555;margin-bottom:8px;">L'objectif de ce rapport est d'identifier les pathologies de la maçonnerie de pierre et pisé, de hiérarchiser leurs degrés d'importance et de proposer des solutions adaptées à la conservation du bâti. L'étude se base sur les observations faites à la date mentionnée ci-dessus. Seules les pathologies visibles en l'état seront inventoriées et commentées. Les dessins de principe présents dans ce document ne doivent en aucun cas être considérés comme des détails d'exécution. Pour toute intervention sur le bâti ancien, il est préférable de faire appel à une entreprise spécialisée.</p>
+        ${s.introText ? `<p style="margin-top:6px;">${s.introText}</p>` : ''}
+        ${s.observations ? `<p style="margin-top:8px"><strong>Observations générales :</strong> ${s.observations}</p>` : ''}
+      </div>
+
+      ${probsHTML}
+
+      ${s.showConclusion!==false && s.conclusion ? `
+      <div class="pdf-conclusion">
+        <h3>Conclusion et recommandations</h3>
+        <div>${s.conclusion}</div>
+      </div>
+      ` : ''}
+
+      <div class="pdf-artisans">
+        <h3>III Réseaux artisans</h3>
+        <p>Pour la réalisation des travaux, je recommande de faire appel à des artisans maitrisant la construction traditionnelle. Des annuaires d'artisans qualifiés sont disponibles sur les sites :</p>
+        <p>- <strong>OIKOS</strong> : <a href="https://oikos-ecoconstruction.com/reseau-oikos/annuaire-pro/">https://oikos-ecoconstruction.com/reseau-oikos/annuaire-pro/</a></p>
+        <p>- <strong>Réseau Cabestan</strong> : <a href="https://www.cabestan.fr/spip.php?page=annuaire">https://www.cabestan.fr/spip.php?page=annuaire</a></p>
+        <p>- <strong>ASTERRE</strong> : <a href="https://www.asterre.org/les-pros-asterre/?cat=artisans-et-entreprises-de-mise-en-oeuvre#pros-filtre">https://www.asterre.org/les-pros-asterre/?cat=artisans-et-entreprises-de-mise-en-oeuvre#pros-filtre</a></p>
+        <p style="margin-top:8px;">Si les artisans proposés sur ces listes ne sont pas disponibles ou trop onéreux, il est tout à fait possible de faire appel à des artisans conventionnels, il faudra alors être vigilant au respect des règles de l'art et à la bonne réalisation des ouvrages.</p>
+        <p style="margin-top:8px;">L'ensemble des images et illustration de ce compte rendu sont extraites de l'ouvrage <strong><em>Réhabiliter le pisé, vers des pratiques adaptées</em></strong> des éditions ACTES SUD et CRATERRE.</p>
+        <p>Ce livre est disponible à la vente en contactant le secrétariat de l'association CRATERRE : <a href="mailto:secretariat@craterre.org">secretariat@craterre.org</a>. Prix 36 € hors livraison.</p>
+      </div>
+
+      <div class="pdf-footer">
+        <span>Atelier Canabae — 5, allée Susan Sontag — 69002 Lyon</span>
+        <span>contact@ateliercanabae.com — 06 51 21 31 31</span>
+      </div>
+    </div>
+  `;
+}
+
+// ==================== RENDER ====================
+function render() {
+  const s = state;
+  const app = document.getElementById('app');
+  
+  if (s.currentView === 'home') {
+    app.innerHTML = renderHomePage();
+    if (s.notification) app.innerHTML += '<div class="notification">' + s.notification + '</div>';
+    return;
+  }
+
+  app.innerHTML = `
+    <!-- HEADER -->
+    <div class="app-header">
+      <div class="logo-area">
+        <button class="btn btn-outline" onclick="goHome()" style="margin-right:10px;padding:6px 10px;font-size:16px;" title="Accueil">⌂</button>
+        <img src="https://raw.githubusercontent.com/gadmy/atelier-canabae-crm/main/LogoAtelieCanabae.png" alt="Atelier Canabae" style="height:36px;margin-right:8px;">
+        <h1>CR Pisé <span>Atelier Canabae</span></h1>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary" onclick="saveToGitHub()">☁️ Sauvegarder</button>
+        <button class="btn btn-primary" onclick="downloadPDF()">⬇ Télécharger PDF</button>
+      </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="app-body">
+      <!-- SIDEBAR -->
+      <div class="sidebar">
+        <div class="sidebar-tabs">
+          <button class="sidebar-tab ${s.sidebarTab==='client'?'active':''}" onclick="setState({sidebarTab:'client'})">🏠 Client</button>
+          <button class="sidebar-tab ${s.sidebarTab==='probs'?'active':''}" onclick="setState({sidebarTab:'probs'})">⚠️ Problématiques</button>
+        </div>
+
+        <div class="sidebar-panel ${s.sidebarTab==='client'?'active':''}">
+        <div class="sidebar-section">
+          <h2>Informations client</h2>
+          <label>Nom du client</label>
+          <input type="text" value="${esc(s.clientName)}" oninput="state.clientName=this.value" placeholder="M. / Mme..." />
+          <div style="height:8px"></div>
+          <label>Adresse du bien</label>
+          <input type="text" value="${esc(s.clientAddress)}" oninput="state.clientAddress=this.value" placeholder="Rue..." />
+          <div style="height:4px"></div>
+          <input type="text" value="${esc(s.clientCity)}" oninput="state.clientCity=this.value" placeholder="Code postal, Ville" />
+          <div style="height:8px"></div>
+          <div class="field-row">
+            <div>
+              <label>Téléphone</label>
+              <input type="tel" value="${esc(s.clientPhone)}" oninput="state.clientPhone=this.value" />
+            </div>
+            <div>
+              <label>Date visite</label>
+              <input type="date" value="${esc(s.visitDate)}" oninput="state.visitDate=this.value" />
+            </div>
+          </div>
+          <label>Email</label>
+          <input type="email" value="${esc(s.clientEmail)}" oninput="state.clientEmail=this.value" />
+          <div style="height:8px"></div>
+          <div class="field-row">
+            <div>
+              <label>Type de bâtiment</label>
+              <select onchange="state.buildingType=this.value">
+                ${['Maison individuelle','Corps de ferme','Grange','Immeuble','Dépendance','Autre'].map(t => 
+                  `<option ${s.buildingType===t?'selected':''}>${t}</option>`
+                ).join('')}
+              </select>
+            </div>
+            <div>
+              <label>Niveaux</label>
+              <input type="text" value="${esc(s.buildingFloors)}" oninput="state.buildingFloors=this.value" placeholder="R+1" />
+            </div>
+          </div>
+          <label>Époque de construction</label>
+          <input type="text" value="${esc(s.buildingAge)}" oninput="state.buildingAge=this.value" placeholder="Ex: XIXe siècle" />
+          <div style="height:8px"></div>
+        </div>
+        </div>
+
+        <div class="sidebar-panel ${s.sidebarTab==='probs'?'active':''}">
+        <div class="sidebar-section">
+          <h2>Problématiques</h2>
+          <p style="font-size:12px;color:var(--text-light);margin-bottom:10px;">Cliquez pour ajouter au CR · ✎ pour modifier le texte par défaut</p>
+          <div class="tag-bar">
+            <button class="tag-btn ${!s.filterTag?'active':''}" onclick="setFilterTag(null)">Tout</button>
+            ${getAllTags().map(tag => `
+              <button class="tag-btn ${s.filterTag===tag?'active':''}" onclick="setFilterTag('${tag}')">${tag}</button>
+            `).join('')}
+          </div>
+          <div class="prob-library">
+            ${getFilteredLibrary().map(prob => `
+              <div class="prob-item-lib ${s.selectedProbs.includes(prob.id)?'selected':''}" onclick="toggleProb('${prob.id}')">
+                <div class="prob-check">${s.selectedProbs.includes(prob.id)?'✓':''}</div>
+                <div style="flex:1">
+                  <div class="prob-name">${prob.name}</div>
+                  <div class="prob-tags-display">
+                    ${(prob.tags||[]).map(t => `<span class="prob-tag-small">${t}</span>`).join('')}
+                  </div>
+                </div>
+                <button class="prob-edit-btn" onclick="openEditProb('${prob.id}', event)" title="Modifier le texte par défaut">✎</button>
+                ${prob.isCustom ? `<button class="prob-edit-btn" onclick="deleteProb('${prob.id}', event)" title="Supprimer" style="color:#C0392B;">✕</button>` : ''}
+              </div>
+            `).join('')}
+            <div style="padding:8px 4px;">
+              <button class="btn btn-outline" style="width:100%;font-size:12px;" onclick="openCreateProb()">+ Nouvelle problématique</button>
+            </div>
+          </div>
+          ${s.creatingProb ? `
+            <div class="modal-overlay" onclick="closeCreateProb()">
+              <div class="modal prob-edit-modal" onclick="event.stopPropagation()">
+                <h3>+ Nouvelle problématique</h3>
+                <p style="font-size:12px;color:var(--text-light);margin-bottom:10px;">Ajoutez une entrée personnalisée à la bibliothèque.</p>
+                <label style="font-size:12px;font-weight:600;">Nom *</label>
+                <input id="new-prob-name" type="text" placeholder="Ex: Infiltration en pied de mur" style="width:100%;margin:4px 0 10px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;" />
+                <label style="font-size:12px;font-weight:600;">Description de la pathologie</label>
+                <textarea id="new-prob-text" placeholder="Décrire la pathologie observée..." style="margin:4px 0 10px;"></textarea>
+                <label style="font-size:12px;font-weight:600;">Traitement préconisé</label>
+                <textarea id="new-prob-traitement" placeholder="Décrire le traitement recommandé..." style="margin:4px 0 10px;"></textarea>
+                <label style="font-size:12px;font-weight:600;">Tags (séparés par des virgules)</label>
+                <input id="new-prob-tags" type="text" placeholder="Ex: Humidité, Structure" style="width:100%;margin:4px 0 10px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;" />
+                <div class="modal-actions">
+                  <button class="btn btn-outline" onclick="closeCreateProb()">Annuler</button>
+                  <button class="btn btn-primary" onclick="saveCreateProb()">Ajouter</button>
+                </div>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+        </div>
+
+        ${s.editingProbId ? renderEditProbModal() : ''}
+      </div>
+
+      ${s.showObsEditor ? renderObsEditor() : ''}
+      ${s.showConcEditor ? renderConcEditor() : ''}
+
+      <!-- MAIN -->
+      <div class="main-area">
+        ${renderEditView()}
+      </div>
+    </div>
+
+    <!-- PDF hidden container -->
+    <div id="pdf-content"></div>
+
+    ${s.notification ? `<div class="notification">${s.notification}</div>` : ''}
+  `;
+
+  // Re-attach textarea values (to preserve cursor)
+  document.querySelectorAll('[data-prob-textarea]').forEach(ta => {
+    const probId = ta.getAttribute('data-prob-textarea');
+    ta.value = s.probData[probId]?.text || '';
+  });
+  document.querySelectorAll('[data-prob-traitement]').forEach(ta => {
+    const probId = ta.getAttribute('data-prob-traitement');
+    ta.value = s.probData[probId]?.traitement || '';
+  });
+  document.querySelector('[data-conclusion-textarea]')?.setAttribute('value', '');
+  const concTA = document.querySelector('[data-conclusion-textarea]');
+  if (concTA) concTA.value = s.conclusion;
+  refreshPdfPreview();
+  scheduleAutosave();
+}
+
+let _autosaveTimer = null;
+let _lastSavedSnapshot = null;
+
+function scheduleAutosave() {
+  if (!state.currentCRId) return;
+  const snapshot = JSON.stringify({ 
+    clientName: state.clientName, clientAddress: state.clientAddress,
+    clientCity: state.clientCity, clientPhone: state.clientPhone,
+    clientEmail: state.clientEmail, visitDate: state.visitDate,
+    buildingType: state.buildingType, buildingAge: state.buildingAge,
+    buildingFloors: state.buildingFloors, observations: state.observations,
+    selectedProbs: state.selectedProbs, probData: state.probData,
+    conclusion: state.conclusion
+  });
+  if (snapshot === _lastSavedSnapshot) return;
+  clearTimeout(_autosaveTimer);
+  _autosaveTimer = setTimeout(async function() {
+    const current = JSON.stringify({ 
+      clientName: state.clientName, clientAddress: state.clientAddress,
+      clientCity: state.clientCity, clientPhone: state.clientPhone,
+      clientEmail: state.clientEmail, visitDate: state.visitDate,
+      buildingType: state.buildingType, buildingAge: state.buildingAge,
+      buildingFloors: state.buildingFloors, observations: state.observations,
+      selectedProbs: state.selectedProbs, probData: state.probData,
+      conclusion: state.conclusion
+    });
+    if (current === _lastSavedSnapshot) return;
+    _lastSavedSnapshot = current;
+    const btn = document.querySelector('.btn-secondary');
+    if (btn) btn.innerHTML = '💾 Sauvegarde...';
+    await saveToGitHub();
+    if (btn) btn.innerHTML = '☁️ Sauvegarder';
+  }, 4000);
+}
+
+function refreshPdfPreview() {
+  var iframe = document.getElementById('pdf-preview-iframe');
+  if (!iframe) return;
+  try {
+    pdfMake.createPdf(buildPdfMakeDoc()).getBlob(function(blob) {
+      var oldUrl = iframe._blobUrl;
+      var url = URL.createObjectURL(blob);
+      iframe._blobUrl = url;
+      iframe.src = url;
+      if (oldUrl) setTimeout(function(){ URL.revokeObjectURL(oldUrl); }, 5000);
+    });
+  } catch(e) { console.error('pdfmake:', e); }
+}
+
+function renderEditView() {
+  const s = state;
+  if (s.selectedProbs.length === 0) {
+    return `
+      <div class="empty-state">
+        <div class="empty-icon">🏠</div>
+        <h3>Aucune problématique sélectionnée</h3>
+        <p>Sélectionnez les problématiques identifiées lors de la visite dans le panneau de gauche pour commencer votre compte rendu.</p>
+      </div>
+    `;
+  }
+
+  let html = ``;s
+  
+  s.selectedProbs.forEach((probId, idx) => {
+    const lib = s.library.find(p => p.id === probId);
+    const data = s.probData[probId];
+    if (!lib || !data) return;
+
+    html += `
+      <div class="prob-card">
+        <div class="prob-card-header">
+          <span class="drag-handle">⠿</span>
+          <span class="prob-card-title">${idx+1}. ${lib.name}</span>
+          <select class="priority-select" onchange="updateProbPriority('${probId}', this.value)">
+            <option value="urgent" ${data.priority==='urgent'?'selected':''}>🔴 Urgent</option>
+            <option value="important" ${data.priority==='important'?'selected':''}>🟠 Important</option>
+            <option value="watch" ${data.priority==='watch'?'selected':''}>🟡 À surveiller</option>
+            <option value="safe" ${data.priority==='safe'?'selected':''}>🟢 Sans gravité</option>
+          </select>
+          <span class="priority-badge priority-${data.priority}">${priorityLabel(data.priority)}</span>
+        </div>
+        <div class="prob-card-body">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <label style="font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;">Description de la pathologie</label>
+            <input type="checkbox" ${data.showDesc!==false?'checked':''} onchange="state.probData['${probId}'].showDesc=this.checked;render()" title="Inclure dans le PDF">
+          </div>
+          <textarea data-prob-textarea="${probId}" oninput="updateProbText('${probId}', this.value)" rows="5" style="opacity:${data.showDesc!==false?'1':'0.4'}"></textarea>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;margin-bottom:4px;">
+            <label style="font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;">Traitement préconisé</label>
+            <input type="checkbox" ${data.showTraitement!==false?'checked':''} onchange="state.probData['${probId}'].showTraitement=this.checked;render()" title="Inclure dans le PDF">
+          </div>
+          <textarea data-prob-traitement="${probId}" oninput="updateProbTraitement('${probId}', this.value)" rows="4" placeholder="Décrire le traitement recommandé..." style="opacity:${data.showTraitement!==false?'1':'0.4'}"></textarea>
+          
+          <div class="photo-area">
+            <div class="photo-area-title">📷 Photos</div>
+            <div class="photo-grid">
+              ${data.photos.map(photo => `
+                <div style="flex-shrink:0;">
+                  <div class="photo-thumb" style="width:150px; height:113px;">
+                    <img src="${photo.data}" />
+                    <button class="photo-remove" onclick="removePhoto('${probId}', ${photo.id})">✕</button>
+                    <div class="photo-legend" contenteditable="true" onblur="updatePhotoLegend('${probId}', ${photo.id}, this.textContent)">${esc(photo.legend)}</div>
+                  </div>
+                  <div style="display:flex;gap:4px;margin-top:4px;">
+                    <button onclick="updatePhotoSize('${probId}', ${photo.id}, 150)" style="flex:1;padding:2px 0;font-size:10px;cursor:pointer;background:${(photo.size||150)<400?'#8B7355':'#eee'};color:${(photo.size||150)<400?'#fff':'#333'};border:1px solid #ccc;border-radius:3px;">⅓</button>
+                    <button onclick="updatePhotoSize('${probId}', ${photo.id}, 480)" style="flex:1;padding:2px 0;font-size:10px;cursor:pointer;background:${(photo.size||150)>=400?'#8B7355':'#eee'};color:${(photo.size||150)>=400?'#fff':'#333'};border:1px solid #ccc;border-radius:3px;">▣</button>
+                  </div>
+                </div>
+              `).join('')}
+              <label class="photo-add-btn">
+                <span style="font-size:20px">+</span>
+                <span>Ajouter</span>
+                <input type="file" accept="image/*" multiple style="display:none" onchange="addPhotos('${probId}', this.files)">
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-sm btn-outline" onclick="moveProbUp('${probId}')" ${idx===0?'disabled':''}>↑</button>
+          <button class="btn btn-sm btn-outline" onclick="moveProbDown('${probId}')" ${idx===s.selectedProbs.length-1?'disabled':''}>↓</button>
+          <button class="btn btn-sm btn-danger" onclick="toggleProb('${probId}')">Retirer</button>
+        </div>
+      </div>
+    `;
+  });
+
+  // Observations
+  html = `
+    <div class="cr-section-title">Observations générales</div>
+    <div class="prob-card">
+      <div class="prob-card-body">
+        <div class="obs-preview" onclick="openObsEditor()" style="min-height:60px;max-height:120px;">${state.observations || ''}</div>
+      </div>
+    </div>
+    <div class="cr-section-title" style="margin-top:28px">Problématiques identifiées (${s.selectedProbs.length})</div>
+  ` + html;
+
+  // Conclusion
+  html += `
+
+    <div class="cr-section-title" style="margin-top:28px">
+      Conclusion & recommandations
+      <label style="font-size:12px;font-weight:400;margin-left:12px;cursor:pointer;">
+        <input type="checkbox" ${state.showConclusion!==false?'checked':''} onchange="state.showConclusion=this.checked;render()" style="margin-right:4px;">
+        Inclure dans le PDF
+      </label>
+    </div>
+    <div class="prob-card">
+      <div class="prob-card-body">
+        <div class="obs-preview" onclick="openConcEditor()" style="min-height:60px;max-height:120px;opacity:${state.showConclusion!==false?'1':'0.4'}">${state.conclusion || ''}</div>
+      </div>
+    </div>
+
+    <div class="cr-section-title" style="margin-top:28px">🏗 Artisans et ressources spécialisés</div>
+    <div class="prob-card">
+      <div class="prob-card-body" style="font-size:13px;line-height:1.6;color:var(--text-light);">
+        <p style="margin:0 0 6px;">Pour la réalisation des travaux, je recommande de faire appel à des artisans maitrisant la construction traditionnelle. Des annuaires d'artisans qualifiés sont disponibles sur les sites :</p>
+        <p style="margin:2px 0;">- <strong>OIKOS</strong> : <a href="https://oikos-ecoconstruction.com/reseau-oikos/annuaire-pro/" target="_blank">oikos-ecoconstruction.com</a></p>
+        <p style="margin:2px 0;">- <strong>Réseau Cabestan</strong> : <a href="https://www.cabestan.fr/spip.php?page=annuaire" target="_blank">cabestan.fr</a></p>
+        <p style="margin:2px 0;">- <strong>ASTERRE</strong> : <a href="https://www.asterre.org/les-pros-asterre/?cat=artisans-et-entreprises-de-mise-en-oeuvre#pros-filtre" target="_blank">asterre.org</a></p>
+        <p style="margin:6px 0 2px;">Si les artisans proposés sur ces listes ne sont pas disponibles ou trop onéreux, il est tout à fait possible de faire appel à des artisans conventionnels.</p>
+        <p style="margin:2px 0;font-size:11px;color:#555;"><em>Réhabiliter le pisé, vers des pratiques adaptées</em> — ACTES SUD et CRATERRE. Contact : <a href="mailto:secretariat@craterre.org">secretariat@craterre.org</a>. Prix 36 €.</p>
+      </div>
+    </div>
+  `;
+
+  return `
+    <div style="display:flex;gap:0;height:100%;min-height:0;">
+      <div style="flex:1;min-width:0;overflow-y:auto;padding:20px 24px;" id="edit-scroll-area">
+        ${html}
+      </div>
+      <div style="width:520px;flex-shrink:0;background:#e0ddd8;border-left:1px solid var(--border);display:flex;flex-direction:column;">
+        <iframe id="pdf-preview-iframe" style="flex:1;width:100%;border:none;" src="about:blank"></iframe>
+      </div>
+    </div>
+  `;
+}
+
+function renderConcEditor() {
+  return `
+    <div class="modal-overlay" onclick="closeConcEditor()">
+      <div class="modal editor-modal" onclick="event.stopPropagation()">
+        <h3>Conclusion et recommandations</h3>
+        <div class="editor-toolbar">
+          <select onchange="execFontName(this)" title="Police">
+            <option value="DM Sans">DM Sans</option>
+            <option value="Source Serif 4">Source Serif</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Arial">Arial</option>
+            <option value="Courier New">Courier</option>
+            <option value="Times New Roman">Times</option>
+          </select>
+          <select onchange="execFontSize(this)" title="Taille">
+            <option value="1">Très petit</option>
+            <option value="2">Petit</option>
+            <option value="3" selected>Normal</option>
+            <option value="4">Moyen</option>
+            <option value="5">Grand</option>
+            <option value="6">Très grand</option>
+          </select>
+          <select onchange="execCmd('formatBlock',this.value);this.selectedIndex=0" title="Style">
+            <option value="" disabled selected>Style</option>
+            <option value="<h1>">Titre 1</option>
+            <option value="<h2>">Titre 2</option>
+            <option value="<h3>">Titre 3</option>
+            <option value="<h4>">Titre 4</option>
+            <option value="<p>">Paragraphe</option>
+            <option value="<blockquote>">Citation</option>
+          </select>
+        </div>
+        <div class="editor-toolbar">
+          <button onclick="execCmd('bold')" title="Gras"><b>G</b></button>
+          <button onclick="execCmd('italic')" title="Italique"><i>I</i></button>
+          <button onclick="execCmd('underline')" title="Souligné"><u>S</u></button>
+          <button onclick="execCmd('strikeThrough')" title="Barré"><s>B</s></button>
+          <div class="sep"></div>
+          <button onclick="execCmd('justifyLeft')" title="Gauche">⫷</button>
+          <button onclick="execCmd('justifyCenter')" title="Centrer">⫿</button>
+          <button onclick="execCmd('justifyRight')" title="Droite">⫸</button>
+          <div class="sep"></div>
+          <button onclick="execCmd('insertUnorderedList')" title="Liste à puces">•≡</button>
+          <button onclick="execCmd('insertOrderedList')" title="Liste numérotée">1.</button>
+          <button onclick="execCmd('indent')" title="Indenter">→</button>
+          <button onclick="execCmd('outdent')" title="Désindenter">←</button>
+          <div class="sep"></div>
+          <button onclick="insertTable()" title="Tableau">☷</button>
+          <button onclick="insertEditorImage()" title="Image">🖼</button>
+          <button onclick="insertLink()" title="Lien">🔗</button>
+          <button onclick="insertHR()" title="Ligne">―</button>
+          <div class="sep"></div>
+          <button onclick="execCmd('undo')" title="Annuler">↩</button>
+          <button onclick="execCmd('redo')" title="Rétablir">↪</button>
+          <button onclick="execCmd('removeFormat')" title="Effacer formatage">✕</button>
+        </div>
+        <div id="conc-editor" class="editor-content" contenteditable="true"></div>
+        <div class="modal-actions">
+          <button class="btn btn-outline" onclick="closeConcEditor()">Fermer</button>
+          <button class="btn btn-primary" onclick="closeConcEditor()">✓ Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderObsEditor() {
+  return `
+    <div class="modal-overlay" onclick="closeObsEditor()">
+      <div class="modal editor-modal" onclick="event.stopPropagation()">
+        <h3>Observations générales</h3>
+        <div class="editor-toolbar">
+          <select onchange="execFontName(this)" title="Police">
+            <option value="DM Sans">DM Sans</option>
+            <option value="Source Serif 4">Source Serif</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Arial">Arial</option>
+            <option value="Courier New">Courier</option>
+            <option value="Times New Roman">Times</option>
+          </select>
+          <select onchange="execFontSize(this)" title="Taille">
+            <option value="1">Très petit</option>
+            <option value="2">Petit</option>
+            <option value="3" selected>Normal</option>
+            <option value="4">Moyen</option>
+            <option value="5">Grand</option>
+            <option value="6">Très grand</option>
+          </select>
+          <select onchange="execCmd('formatBlock',this.value);this.selectedIndex=0" title="Style">
+            <option value="" disabled selected>Style</option>
+            <option value="<h1>">Titre 1</option>
+            <option value="<h2>">Titre 2</option>
+            <option value="<h3>">Titre 3</option>
+            <option value="<h4>">Titre 4</option>
+            <option value="<p>">Paragraphe</option>
+            <option value="<blockquote>">Citation</option>
+          </select>
+        </div>
+        <div class="editor-toolbar">
+          <button onclick="execCmd('bold')" title="Gras"><b>G</b></button>
+          <button onclick="execCmd('italic')" title="Italique"><i>I</i></button>
+          <button onclick="execCmd('underline')" title="Souligné"><u>S</u></button>
+          <button onclick="execCmd('strikeThrough')" title="Barré"><s>B</s></button>
+          <div class="sep"></div>
+          <button onclick="execCmd('justifyLeft')" title="Gauche">⫷</button>
+          <button onclick="execCmd('justifyCenter')" title="Centrer">⫿</button>
+          <button onclick="execCmd('justifyRight')" title="Droite">⫸</button>
+          <div class="sep"></div>
+          <button onclick="execCmd('insertUnorderedList')" title="Liste à puces">•≡</button>
+          <button onclick="execCmd('insertOrderedList')" title="Liste numérotée">1.</button>
+          <button onclick="execCmd('indent')" title="Indenter">→</button>
+          <button onclick="execCmd('outdent')" title="Désindenter">←</button>
+          <div class="sep"></div>
+          <button onclick="insertTable()" title="Tableau">☷</button>
+          <button onclick="insertEditorImage()" title="Image">🖼</button>
+          <button onclick="insertLink()" title="Lien">🔗</button>
+          <button onclick="insertHR()" title="Ligne">―</button>
+          <div class="sep"></div>
+          <button onclick="execCmd('undo')" title="Annuler">↩</button>
+          <button onclick="execCmd('redo')" title="Rétablir">↪</button>
+          <button onclick="execCmd('removeFormat')" title="Effacer formatage">✕</button>
+        </div>
+        <div id="obs-editor" class="editor-content" contenteditable="true"></div>
+        <div class="modal-actions">
+          <button class="btn btn-outline" onclick="closeObsEditor()">Fermer</button>
+          <button class="btn btn-primary" onclick="closeObsEditor()">✓ Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderHomePage() {
+  const s = state;
+  const connected = true;
+  
+  return `
+    <div class="home-page">
+      <div class="home-hero">
+        <img src="https://raw.githubusercontent.com/gadmy/atelier-canabae-crm/main/LogoAtelieCanabae.png" alt="Atelier Canabae" style="height:80px;margin-bottom:16px;">
+        <h2>Compte Rendu Pisé</h2>
+        <p>Atelier Canabae — Comptes rendus de visite conseil</p>
+      </div>
+
+      <div class="gh-connect-box">
+        <h3>☁️ Sauvegarde cloud</h3>
+        <div class="gh-status">
+          <span class="gh-status-dot connected"></span>
+          <span>Connecté — sauvegarde activée</span>
+        </div>
+      </div>
+
+      <div class="home-actions">
+        <div class="home-action-btn" onclick="newCR()">
+          <div class="action-icon">📝</div>
+          <div class="action-title">Nouveau CR</div>
+          <div class="action-desc">Créer un nouveau compte rendu de visite</div>
+        </div>
+      </div>
+
+      ${connected ? `
+        <div class="cr-list">
+          <div class="cr-list-title">Comptes rendus sauvegardés</div>
+          ${s.savedCRList.length === 0 ? `
+            <div class="cr-list-empty">
+              Aucun CR sauvegardé pour le moment
+            </div>
+          ` : s.savedCRList.map(cr => `
+            <div class="cr-list-item" onclick="loadFromGitHub('${cr.id}')">
+              <div class="cr-item-info">
+                <div class="cr-item-name">${esc(cr.name)}</div>
+                <div class="cr-item-date">${cr.date ? 'Modifié le ' + cr.date : ''}</div>
+              </div>
+              <div class="cr-item-actions">
+                <button class="btn btn-sm btn-danger" onclick="deleteFromGitHub('${cr.id}', event)">🗑</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderEditProbModal() {
+  const prob = state.library.find(p => p.id === state.editingProbId);
+  if (!prob) return '';
+  return `
+    <div class="modal-overlay" onclick="closeEditProb()">
+      <div class="modal prob-edit-modal" onclick="event.stopPropagation()">
+        <h3>✎ ${prob.name}</h3>
+        <p style="font-size:12px;color:var(--text-light);margin-bottom:10px;">Modifiez le texte par défaut de cette problématique. Il sera utilisé pour les prochains CR.</p>
+        <textarea id="lib-edit-ta">${esc(prob.defaultText)}</textarea>
+        <div class="modal-actions">
+          <button class="btn btn-outline" onclick="closeEditProb()">Annuler</button>
+          <button class="btn btn-outline" onclick="resetEditProb('${prob.id}')" title="Revenir au texte original">↺ Réinitialiser</button>
+          <button class="btn btn-primary" onclick="saveEditProb('${prob.id}')">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ==================== PDF DEBUG CONFIG ====================
+let pdfCfg = {
+  marginTop: 18, marginBottom: 18, marginLeft: 15, marginRight: 15, pageHeight: 297,
+  fontBody: 'Georgia', fontTitles: 'Georgia',
+  headerFontSize: 9, headerBreak: 'avoid',
+  clientFontSize: 10, clientBreak: 'avoid',
+  introFontSize: 10, introLineHeight: 1.55, introBreak: 'auto',
+  probBreak: 'avoid', probSpacingBefore: 14, probSpacingAfter: 8,
+  probTitleFontSize: 13, probTitleMarginTop: 14, probTitleMarginBottom: 6,
+  diagFontSize: 10.5, diagLineHeight: 1.55, diagBreak: 'avoid',
+  traitFontSize: 10, traitLineHeight: 1.5, traitBreak: 'avoid',
+  photoMaxWidth: 200, photoMaxHeight: 150, photosBreak: 'avoid',
+  conclusionFontSize: 10.5, conclusionLineHeight: 1.55, conclusionBreak: 'avoid',
+  artisansFontSize: 9.5, artisansLineHeight: 1.5, artisansBreak: 'avoid',
+  footerFontSize: 8,
+};
+
+
+function _obsolete_applyDebugCSS_disabled() {
+  let el = document.getElementById('pdf-debug-style');
+  if (!el) { el = document.createElement('style'); el.id = 'pdf-debug-style'; document.head.appendChild(el); }
+  const c = pdfCfg;
+  setTimeout(function() {
+    try {
+      pdfMake.createPdf(buildPdfMakeDoc()).getDataUrl(function(url) {
+        var iframe = document.getElementById('pdf-preview-iframe');
+        if (iframe) iframe.src = url;
+      });
+    } catch(e) { console.error('pdfmake error:', e); }
+  }, 300);
+  el.textContent = `
+    @media print {
+      @page { size: A4; margin: ${c.marginTop}mm ${c.marginRight}mm ${c.marginBottom}mm ${c.marginLeft}mm; }
+      .pdf-debug-panel { display: none !important; }
+      .pdf-page { padding: 0 !important; box-shadow: none !important; }
+      body { font-family: '${c.fontBody}', serif; }
+    }
+    .preview-container { background: #e0ddd8; padding: 20px; }
+    .preview-container .pdf-page { font-family: '${c.fontBody}', serif; padding: ${c.marginTop}mm ${c.marginRight}mm ${c.marginBottom}mm ${c.marginLeft}mm; max-width: 794px; background: white; box-shadow: 0 4px 16px rgba(0,0,0,0.18); margin: 0 auto; }
+    .preview-container .page-break-line { position:absolute; left:0; right:0; height:24px; background:#e0ddd8; border-top:1px solid #c8c3ba; border-bottom:1px solid #c8c3ba; font-size:9px; color:#b0a898; display:flex; align-items:center; justify-content:center; letter-spacing:1px; }
+    #preview-pages-container .pdf-header, .preview-container .pdf-header { page-break-inside: ${c.headerBreak}; }
+    #preview-pages-container .pdf-header p, #preview-pages-container .pdf-header-right,
+    .preview-container .pdf-header p, .preview-container .pdf-header-right { font-size: ${c.headerFontSize}pt; font-family: '${c.fontBody}', serif; }
+    #preview-pages-container .pdf-client-block, .preview-container .pdf-client-block { page-break-inside: ${c.clientBreak}; }
+    #preview-pages-container .pdf-client-block .client-grid, .preview-container .pdf-client-block .client-grid { font-size: ${c.clientFontSize}pt; font-family: '${c.fontBody}', serif; }
+    #preview-pages-container .pdf-intro, .preview-container .pdf-intro { font-size: ${c.introFontSize}pt; line-height: ${c.introLineHeight}; font-family: '${c.fontBody}', serif; }
+    #preview-pages-container .pdf-prob, .preview-container .pdf-prob { margin-top: ${c.probSpacingBefore}px; margin-bottom: ${c.probSpacingAfter}px; }
+    #preview-pages-container .pdf-prob-title, .preview-container .pdf-prob-title { font-size: ${c.probTitleFontSize}pt; font-family: '${c.fontTitles}', serif; margin-top: ${c.probTitleMarginTop}px; margin-bottom: ${c.probTitleMarginBottom}px; display:block; }
+    #preview-pages-container .pdf-prob-text, .preview-container .pdf-prob-text { font-size: ${c.diagFontSize}pt; line-height: ${c.diagLineHeight}; font-family: '${c.fontBody}', serif; }
+    #preview-pages-container .pdf-prob .traitement-block, .preview-container .pdf-prob .traitement-block { font-size: ${c.traitFontSize}pt; line-height: ${c.traitLineHeight}; font-family: '${c.fontBody}', serif; }
+    #preview-pages-container .pdf-photos img, .preview-container .pdf-photos img { max-width: ${c.photoMaxWidth}px; max-height: ${c.photoMaxHeight}px; }
+    #preview-pages-container .pdf-conclusion, .preview-container .pdf-conclusion { font-size: ${c.conclusionFontSize}pt; line-height: ${c.conclusionLineHeight}; font-family: '${c.fontBody}', serif; }
+    #preview-pages-container .pdf-conclusion h3, .preview-container .pdf-conclusion h3 { font-family: '${c.fontTitles}', serif; }
+    #preview-pages-container .pdf-artisans, .preview-container .pdf-artisans { font-size: ${c.artisansFontSize}pt; line-height: ${c.artisansLineHeight}; font-family: '${c.fontBody}', serif; }
+    #preview-pages-container .pdf-artisans h3, .preview-container .pdf-artisans h3 { font-family: '${c.fontTitles}', serif; }
+    #preview-pages-container .pdf-footer, .preview-container .pdf-footer { font-size: ${c.footerFontSize}pt; font-family: '${c.fontBody}', serif; }
+    #preview-pdf-source, #preview-pages-container .pdf-inner { font-family: '${c.fontBody}', serif; padding: ${c.marginTop}mm ${c.marginRight}mm ${c.marginBottom}mm ${c.marginLeft}mm; }
+  `;
+}
+
+function _obsolete_renderPreviewView_disabled() {
+  applyDebugCSS();
+  const c = pdfCfg;
+  const fonts = ['Georgia','Garamond','Palatino Linotype','Times New Roman','Arial','Helvetica','Calibri','Gill Sans'];
+  function sl(key, label, min, max, step=1) {
+    return `<div class="dbg-row">
+      <label>${label}</label>
+      <input type="range" min="${min}" max="${max}" step="${step}" value="${c[key]}"
+        oninput="pdfCfg['${key}']=parseFloat(this.value);document.getElementById('dbg-val-${key}').textContent=this.value;applyDebugCSS()">
+      <span id="dbg-val-${key}">${c[key]}</span>
+    </div>`;
+  }
+  function nm(key, label, min, max, unit='mm', step=1) {
+    return `<div class="dbg-row"><label>${label}</label><input type="number" min="${min}" max="${max}" step="${step}" value="${c[key]}" style="width:60px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:center;" oninput="pdfCfg['${key}']=parseFloat(this.value)||${min};applyDebugCSS()"><span style="color:var(--stone-light);font-size:11px;">${unit}</span></div>`;
+  }
+  function sel(key, label) {
+    const opts = ['avoid','auto','always'].map(v =>
+      `<option value="${v}" ${c[key]===v?'selected':''}>${v}</option>`).join('');
+    return `<div class="dbg-row">
+      <label>${label}</label>
+      <select onchange="pdfCfg['${key}']=this.value;applyDebugCSS()">${opts}</select>
+    </div>`;
+  }
+  function fsel(key, label) {
+    const opts = fonts.map(f =>
+      `<option value="${f}" ${c[key]===f?'selected':''}>${f}</option>`).join('');
+    return `<div class="dbg-row">
+      <label>${label}</label>
+      <select onchange="pdfCfg['${key}']=this.value;applyDebugCSS()">${opts}</select>
+    </div>`;
+  }
+  function section(title) {
+    return `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--stone-light);margin:12px 0 6px;border-top:1px solid var(--border);padding-top:8px;">${title}</div>`;
+  }
+  return `
+    <div style="display:flex;gap:16px;align-items:flex-start;padding:16px;">
+
+      <!-- PANEL DEBUG -->
+      <div class="pdf-debug-panel" style="
+        width:290px;flex-shrink:0;background:white;border:1.5px solid var(--border);
+        border-radius:10px;padding:16px;font-size:12px;position:sticky;top:16px;
+        box-shadow:var(--shadow);max-height:calc(100vh - 120px);overflow-y:auto;">
+        <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--earth);margin-bottom:4px;font-weight:600;">
+          🛠 Réglages PDF
+        </div>
+
+        ${section('Polices')}
+        ${fsel('fontBody','Corps du texte')}
+        ${fsel('fontTitles','Titres')}
+
+        ${section('Marges de page (mm)')}
+        ${nm('marginTop','Haut',5,40)}
+        ${nm('marginBottom','Bas',5,40)}
+        ${nm('marginLeft','Gauche',5,40)}
+        ${nm('marginRight','Droite',5,40)}
+
+        ${section('En-tête')}
+        ${nm('headerFontSize','Taille (pt)',7,14,'pt',0.5)}
+        ${sel('headerBreak','Saut de page')}
+
+        ${section('Bloc client')}
+        ${nm('clientFontSize','Taille (pt)',7,14,'pt',0.5)}
+        ${sel('clientBreak','Saut de page')}
+
+        ${section('Introduction')}
+        ${nm('introFontSize','Taille (pt)',7,14,'pt',0.5)}
+        ${nm('introLineHeight','Interligne',1,3,'',0.05)}
+        ${sel('introBreak','Saut de page')}
+
+        ${section('Problématiques')}
+        ${nm('probTitleFontSize','Titre (pt)',8,20,'pt',0.5)}
+        ${nm('probTitleMarginTop','Titre marge haut',0,60,'px')}
+        ${nm('probTitleMarginBottom','Titre marge bas',0,60,'px')}
+        ${nm('probSpacingBefore','Bloc espace avant',0,60,'px')}
+        ${nm('probSpacingAfter','Bloc espace après',0,60,'px')}
+        ${sel('probBreak','Saut de page')}
+
+        ${section('Texte diagnostic')}
+        ${nm('diagFontSize','Taille (pt)',7,14,'pt',0.5)}
+        ${nm('diagLineHeight','Interligne',1,3,'',0.05)}
+        ${sel('diagBreak','Saut de page')}
+
+        ${section('Traitement préconisé')}
+        ${nm('traitFontSize','Taille (pt)',7,14,'pt',0.5)}
+        ${nm('traitLineHeight','Interligne',1,3,'',0.05)}
+        ${sel('traitBreak','Saut de page')}
+
+        ${section('Photos')}
+        ${nm('photoMaxWidth','Largeur max',80,400,'px',10)}
+        ${nm('photoMaxHeight','Hauteur max',60,300,'px',10)}
+        ${sel('photosBreak','Saut de page')}
+
+        ${section('Conclusion')}
+        ${nm('conclusionFontSize','Taille (pt)',7,14,'pt',0.5)}
+        ${nm('conclusionLineHeight','Interligne',1,3,'',0.05)}
+        ${sel('conclusionBreak','Saut de page')}
+
+        ${section('Réseaux artisans')}
+        ${nm('artisansFontSize','Taille (pt)',7,14,'pt',0.5)}
+        ${nm('artisansLineHeight','Interligne',1,3,'',0.05)}
+        ${sel('artisansBreak','Saut de page')}
+
+        ${section('Pied de page')}
+        ${nm('footerFontSize','Taille (pt)',6,12,'pt',0.5)}
+
+        <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
+          <button class="btn btn-primary btn-sm" onclick="window.print()">🖨 Imprimer / Enreg. PDF</button>
+          <button class="btn btn-secondary btn-sm" onclick='navigator.clipboard.writeText(JSON.stringify(pdfCfg,null,2)).then(()=>showNotification("✓ Config copiée !"))'>📋 Copier config JSON</button>
+        </div>
+        <div style="margin-top:10px;font-size:10px;color:var(--stone-light);line-height:1.5;">
+          Ajuste, puis "Imprimer" → "Enregistrer en PDF".<br>Quand c'est parfait, copie le JSON et envoie-le.
+        </div>
+      </div>
+
+      <!-- APERÇU -->
+      <div style="flex:1;min-width:0;overflow:hidden;display:flex;flex-direction:column;">
+        <iframe id="pdf-preview-iframe" style="flex:1;width:100%;border:none;background:#e0ddd8;" src="about:blank"></iframe>
+      </div>
+
+    </div>
+    <style>
+      .dbg-row { display:flex;align-items:center;gap:6px;margin-bottom:5px; }
+      .dbg-row label { width:110px;flex-shrink:0;color:var(--text);font-size:11.5px; }
+      .dbg-row input[type=range] { flex:1;accent-color:var(--earth);height:14px; }
+      .dbg-row select { flex:1;font-size:11px;padding:2px 4px;border:1px solid var(--border);border-radius:4px; }
+      .dbg-row span { width:28px;text-align:right;color:var(--stone-light);font-size:11px; }
+    </style>
+  `;
+}
+
+function esc(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ==================== INIT ====================
+if (true) {
+  state.loadingGH = true;
+  render();
+  loadCRList().then(() => { state.loadingGH = false; render(); });
+} else {
+  render();
+}
+</script>
+</body>
+</html>
