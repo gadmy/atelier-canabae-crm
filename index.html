@@ -1,10 +1,10 @@
 <!--
 ╔══════════════════════════════════════════════════════════════════╗
 ║                    CR PISÉ — ATELIER CANABAE                     ║
-║            Générateur de comptes rendus de visite conseil         ║
+║            Générateur de comptes rendus de visite conseil        ║
 ║                   pour maisons en pisé                           ║
 ╠══════════════════════════════════════════════════════════════════╣
-║  Développeur : Alix Moreau — Atelier Canabae                    ║
+║  Développeur : Alix Moreau — Atelier Canabae                     ║
 ║  Assisté par : Claude (Anthropic)                                ║
 ║  Version actuelle : 1.0.0                                        ║
 ║  Dernière mise à jour : 2026-02-09                               ║
@@ -30,7 +30,7 @@
 ║  HISTORIQUE DES VERSIONS                                         ║
 ║  ========================                                        ║
 ║                                                                  ║
-║  v1.0.0 — 2026-02-09                                            ║
+║  v1.0.0 — 2026-02-09                                             ║
 ║  ─────────────────────                                           ║
 ║  • Création du prototype initial                                 ║
 ║  • Interface trois panneaux : sidebar + éditeur + aperçu PDF     ║
@@ -478,6 +478,12 @@
     color: var(--earth);
     background: var(--earth-pale);
   }
+  .photo-add-btn.drag-over {
+    border-color: var(--earth);
+    background: var(--earth-pale);
+    color: var(--earth);
+    transform: scale(1.05);
+  }
 
   .card-actions {
     display: flex;
@@ -904,6 +910,135 @@
     color: var(--text-light);
     font-size: 13px;
   }
+  .explorer-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 8px 0;
+  }
+  .explorer-folder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100px;
+    padding: 10px 6px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    position: relative;
+    border: 2px solid transparent;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .explorer-folder:hover { background: var(--earth-pale); border-color: var(--earth-light); }
+  .explorer-folder.drag-over-folder { background: #d4ecd4; border-color: #27AE60; }
+  .explorer-folder .folder-icon { font-size: 44px; line-height: 1; margin-bottom: 6px; }
+  .explorer-folder .folder-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    text-align: center;
+    word-break: break-word;
+    width: 100%;
+  }
+  .explorer-folder .folder-count { font-size: 10px; color: var(--text-light); margin-top: 2px; }
+  .explorer-folder .folder-menu-btn {
+    position: absolute;
+    top: 4px; right: 4px;
+    background: none; border: none;
+    font-size: 14px; cursor: pointer;
+    color: var(--text-light);
+    opacity: 0; transition: opacity 0.1s;
+    padding: 2px 4px; border-radius: 3px;
+  }
+  .explorer-folder:hover .folder-menu-btn { opacity: 1; }
+  .explorer-folder .folder-menu-btn:hover { background: rgba(0,0,0,0.1); }
+  .explorer-cr {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100px;
+    padding: 10px 6px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    position: relative;
+    border: 2px solid transparent;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .explorer-cr:hover { background: var(--earth-pale); border-color: var(--earth-light); }
+  .explorer-cr.dragging { opacity: 0.35; }
+  .explorer-cr .cr-icon { font-size: 38px; line-height: 1; margin-bottom: 6px; }
+  .explorer-cr .cr-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    text-align: center;
+    word-break: break-word;
+    width: 100%;
+  }
+  .explorer-cr .cr-date { font-size: 10px; color: var(--text-light); margin-top: 2px; }
+  .explorer-cr .cr-delete-btn {
+    position: absolute;
+    top: 4px; right: 4px;
+    background: none; border: none;
+    font-size: 13px; cursor: pointer;
+    color: #c0392b; opacity: 0;
+    transition: opacity 0.1s;
+    padding: 2px 4px; border-radius: 3px;
+  }
+  .explorer-cr:hover .cr-delete-btn { opacity: 1; }
+  .explorer-section-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 12px 0 4px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .folder-open-view {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .folder-open-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: var(--earth-pale);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .folder-open-header:hover { background: #ede8df; }
+  .folder-name-input {
+    flex: 1;
+    background: none;
+    border: none;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--clay-dark);
+    cursor: pointer;
+    outline: none;
+    font-family: inherit;
+  }
+  .folder-name-input:focus {
+    background: white;
+    border-bottom: 1px solid var(--earth);
+    cursor: text;
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+  .folder-open-body { padding: 8px 12px; min-height: 60px; }
+  .folder-open-body.drag-active {
+    background: #d4ecd4;
+    outline: 2px dashed #27AE60;
+    outline-offset: -4px;
+  }
+  .no-folder-section { margin-bottom: 4px; }
   .spinner {
     display: inline-block;
     width: 18px; height: 18px;
@@ -1183,6 +1318,16 @@
     to { opacity: 1; transform: translateY(0); }
   }
   .prob-card { animation: fadeIn 0.3s ease; }
+  .prob-card.collapsed .prob-card-body { display: none; }
+  .prob-card.collapsed .card-actions { display: none; }
+  .prob-card.collapsed .prob-card-header { border-bottom: none; }
+  .prob-card.drag-dragging { opacity: 0.4; border: 2px dashed var(--earth); }
+  .prob-card.drag-over-top { border-top: 3px solid var(--earth); }
+  .prob-card.drag-over-bottom { border-bottom: 3px solid var(--earth); }
+  .dragging-active .prob-card-body,
+  .dragging-active .card-actions { pointer-events: none; }
+  .collapse-btn { background:none;border:none;cursor:pointer;font-size:14px;color:var(--stone-light);padding:2px 6px;border-radius:4px;transition:all 0.15s;user-select:none; }
+  .collapse-btn:hover { background:var(--earth-pale);color:var(--earth); }
 
   /* ========== NOTIFICATION ========== */
   .notification {
@@ -1443,17 +1588,26 @@ Il est fortement recommandé de faire appel à des artisans et entreprises spéc
   // UI state
   currentView: 'home',
   activeTab: 'edit',
+  showPdfPreview: true,
+  autosaveMinutes: parseInt(localStorage.getItem('cr_autosave_minutes') || '5'),
+  _unsavedChanges: false,
   sidebarTab: 'client',
   filterTag: null,
   editingProbId: null,
+  collapsedProbs: {},
   creatingProb: false,
   showObsEditor: false,
   showConcEditor: false,
+  showObservations: true,
   showConclusion: true,
+  showArtisans: true,
+  artisans: localStorage.getItem('cr_default_artisans') || `Pour la réalisation des travaux, je recommande de faire appel à des artisans maîtrisant la construction traditionnelle. Des annuaires d'artisans qualifiés sont disponibles sur les sites :\n- OIKOS : oikos-ecoconstruction.com\n- Réseau Cabestan : cabestan.fr\n- ASTERRE : asterre.org\n\nSi les artisans proposés sur ces listes ne sont pas disponibles ou trop onéreux, il est tout à fait possible de faire appel à des artisans conventionnels.`,
   introText: '',
   supabaseReady: false,
   currentCRId: null,
   savedCRList: [],
+  dossiers: [],
+  folderOpen: JSON.parse(localStorage.getItem('cr_folder_open') || '{}'),
   loadingGH: false,
   notification: null,
   
@@ -1570,15 +1724,140 @@ async function initSupabase() {
 
 async function loadCRList() {
   try {
-    const data = await supaFetch('GET', 'comptes_rendus?select=id,nom_client,date_visite,updated_at&order=updated_at.desc');
-    state.savedCRList = (data || []).map(r => ({
+    const [crs, dossiers] = await Promise.all([
+      supaFetch('GET', 'comptes_rendus?select=id,nom_client,date_visite,updated_at,dossier_id,ordre&order=ordre.asc,updated_at.desc'),
+      supaFetch('GET', 'dossiers?select=id,nom,ordre,ouvert&order=ordre.asc').catch(() => [])
+    ]);
+    state.savedCRList = (crs || []).map(r => ({
       id: r.id,
       name: r.nom_client || 'Sans nom',
-      date: r.updated_at ? new Date(r.updated_at).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'}) : ''
+      date: r.updated_at ? new Date(r.updated_at).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'}) : '',
+      dossierId: r.dossier_id || null,
+      ordre: r.ordre || 0
     }));
+    state.dossiers = (dossiers || []).map(d => ({ id: d.id, nom: d.nom, ordre: d.ordre || 0 }));
   } catch(e) {
     state.savedCRList = [];
+    state.dossiers = [];
   }
+}
+
+async function createDossier() {
+  const nom = prompt('Nom du dossier :');
+  if (!nom || !nom.trim()) return;
+  try {
+    const d = await supaFetch('POST', 'dossiers', { nom: nom.trim(), ordre: state.dossiers.length });
+    state.dossiers.push({ id: d[0].id, nom: d[0].nom, ordre: d[0].ordre });
+    state.folderOpen[d[0].id] = false;
+    localStorage.setItem('cr_folder_open', JSON.stringify(state.folderOpen));
+    render();
+  } catch(e) { showNotification('✗ Erreur création dossier'); }
+}
+
+async function renameDossier(id, nom) {
+  if (!nom.trim()) return;
+  try {
+    await supaFetch('PATCH', `dossiers?id=eq.${id}`, { nom: nom.trim() });
+    const d = state.dossiers.find(d => d.id === id);
+    if (d) d.nom = nom.trim();
+  } catch(e) { showNotification('✗ Erreur renommage'); }
+}
+
+async function deleteDossier(id) {
+  if (!confirm('Supprimer ce dossier ? Les CR qu\'il contient seront déplacés hors dossier.')) return;
+  try {
+    await supaFetch('PATCH', `comptes_rendus?dossier_id=eq.${id}`, { dossier_id: null });
+    await supaFetch('DELETE', `dossiers?id=eq.${id}`);
+    state.dossiers = state.dossiers.filter(d => d.id !== id);
+    state.savedCRList.forEach(cr => { if (cr.dossierId === id) cr.dossierId = null; });
+    render();
+  } catch(e) { showNotification('✗ Erreur suppression dossier'); }
+}
+
+async function moveCRToDossier(crId, dossierId) {
+  try {
+    await supaFetch('PATCH', `comptes_rendus?id=eq.${crId}`, { dossier_id: dossierId });
+    const cr = state.savedCRList.find(c => c.id === crId);
+    if (cr) cr.dossierId = dossierId;
+    render();
+  } catch(e) { showNotification('✗ Erreur déplacement'); }
+}
+
+async function saveCROrder(crId, ordre) {
+  try { await supaFetch('PATCH', `comptes_rendus?id=eq.${crId}`, { ordre }); } catch(e) {}
+}
+
+function toggleFolder(id) {
+  state.folderOpen[id] = state.folderOpen[id] ? false : true;
+  localStorage.setItem('cr_folder_open', JSON.stringify(state.folderOpen));
+  render();
+}
+
+let _homeDragId = null;
+
+function initHomeDragDrop() {
+  const container = document.getElementById('cr-home-list');
+  if (!container || container._ddInit) return;
+  container._ddInit = true;
+
+  // Dragstart sur les icônes CR
+  container.addEventListener('dragstart', e => {
+    const item = e.target.closest('.explorer-cr');
+    if (!item) { e.preventDefault(); return; }
+    _homeDragId = item.dataset.crId;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', _homeDragId);
+    setTimeout(() => item.classList.add('dragging'), 0);
+  });
+
+  container.addEventListener('dragend', () => {
+    document.querySelectorAll('.explorer-cr.dragging,.drag-over-folder,.folder-open-body.drag-active')
+      .forEach(el => el.classList.remove('dragging','drag-over-folder','drag-active'));
+    _homeDragId = null;
+  });
+
+  // Attacher les listeners de drop directement sur chaque zone cible
+  function attachDropZones() {
+    // Icônes dossiers fermés
+    container.querySelectorAll('.explorer-folder').forEach(el => {
+      if (el._dropInit) return;
+      el._dropInit = true;
+      el.addEventListener('dragover', e => { if (!_homeDragId) return; e.preventDefault(); el.classList.add('drag-over-folder'); });
+      el.addEventListener('dragleave', e => { if (!el.contains(e.relatedTarget)) el.classList.remove('drag-over-folder'); });
+      el.addEventListener('drop', e => {
+        e.preventDefault(); e.stopPropagation();
+        el.classList.remove('drag-over-folder');
+        if (_homeDragId) moveCRToDossier(_homeDragId, el.dataset.folderId);
+      });
+    });
+    // Corps des dossiers ouverts
+    container.querySelectorAll('.folder-open-body').forEach(el => {
+      if (el._dropInit) return;
+      el._dropInit = true;
+      el.addEventListener('dragover', e => { if (!_homeDragId) return; e.preventDefault(); el.classList.add('drag-active'); });
+      el.addEventListener('dragleave', e => { if (!el.contains(e.relatedTarget)) el.classList.remove('drag-active'); });
+      el.addEventListener('drop', e => {
+        e.preventDefault(); e.stopPropagation();
+        el.classList.remove('drag-active');
+        if (_homeDragId) moveCRToDossier(_homeDragId, el.dataset.folderId);
+      });
+    });
+    // Zone sans dossier
+    const noFolder = container.querySelector('.no-folder-section');
+    if (noFolder && !noFolder._dropInit) {
+      noFolder._dropInit = true;
+      noFolder.addEventListener('dragover', e => { if (!_homeDragId) return; e.preventDefault(); });
+      noFolder.addEventListener('drop', e => {
+        e.preventDefault(); e.stopPropagation();
+        if (_homeDragId) moveCRToDossier(_homeDragId, null);
+      });
+    }
+  }
+
+  attachDropZones();
+  // Réattacher après chaque render (les éléments sont recréés)
+  const observer = new MutationObserver(() => attachDropZones());
+  observer.observe(container, { childList: true, subtree: true });
 }
 
 async function saveToGitHub() {
@@ -1672,6 +1951,7 @@ function newCR() {
   state.selectedProbs = [];
   state.probData = {};
   state.conclusion = '';
+  state.artisans = localStorage.getItem('cr_default_artisans') || `Pour la réalisation des travaux, je recommande de faire appel à des artisans maîtrisant la construction traditionnelle. Des annuaires d'artisans qualifiés sont disponibles sur les sites :\n- OIKOS : oikos-ecoconstruction.com\n- Réseau Cabestan : cabestan.fr\n- ASTERRE : asterre.org\n\nSi les artisans proposés sur ces listes ne sont pas disponibles ou trop onéreux, il est tout à fait possible de faire appel à des artisans conventionnels.`;
   state.library = [...DEFAULT_PROBLEMATIQUES, ...JSON.parse(localStorage.getItem('cr_custom_probs') || '[]')];
   state.currentView = 'editor';
   state.activeTab = 'edit';
@@ -1680,8 +1960,36 @@ function newCR() {
 }
 
 function goHome() {
+  if (state.currentView === 'editor' && state._unsavedChanges) {
+    if (!confirm('Des modifications non sauvegardées seront perdues.\nVoulez-vous quitter sans sauvegarder ?')) return;
+  }
   state.currentView = 'home';
   loadCRList().then(() => render());
+}
+
+function openArtisansEditor() {
+  state.showArtisansEditor = true;
+  render();
+  setTimeout(() => {
+    const ed = document.getElementById('artisans-editor');
+    if (ed) { ed.innerHTML = state.artisans || ''; ed.focus(); }
+  }, 50);
+}
+
+function closeArtisansEditor() {
+  const ed = document.getElementById('artisans-editor');
+  if (ed) state.artisans = ed.innerHTML;
+  state.showArtisansEditor = false;
+  render();
+}
+
+function saveArtisansAsDefault() {
+  const ed = document.getElementById('artisans-editor');
+  if (ed) state.artisans = ed.innerHTML;
+  localStorage.setItem('cr_default_artisans', state.artisans);
+  state.showArtisansEditor = false;
+  showNotification('✓ Enregistré comme modèle pour les prochains CR');
+  render();
 }
 
 function openConcEditor() {
@@ -1913,6 +2221,87 @@ function saveCreateProb() {
   render();
 }
 
+function toggleCollapse(probId) {
+  state.collapsedProbs[probId] = !state.collapsedProbs[probId];
+  render();
+}
+
+function collapseAll() {
+  state.selectedProbs.forEach(id => { state.collapsedProbs[id] = true; });
+  render();
+}
+
+function expandAll() {
+  state.collapsedProbs = {};
+  render();
+}
+
+function sortByPriority() {
+  const order = { urgent: 0, important: 1, watch: 2, safe: 3 };
+  state.selectedProbs.sort((a, b) =>
+    (order[state.probData[a]?.priority] ?? 1) - (order[state.probData[b]?.priority] ?? 1)
+  );
+  render();
+}
+
+let _dragSrcId = null;
+
+function initProbDragDrop() {
+  const container = document.getElementById('prob-cards-container');
+  if (!container || container._ddInit) return;
+  container._ddInit = true;
+
+  container.addEventListener('dragstart', e => {
+    const card = e.target.closest('.prob-card[data-prob-id]');
+    if (!card) return;
+    _dragSrcId = card.dataset.probId;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', _dragSrcId);
+    setTimeout(() => card.classList.add('drag-dragging'), 0);
+  });
+
+  container.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const card = e.target.closest('.prob-card[data-prob-id]');
+    container.querySelectorAll('.prob-card').forEach(c => c.classList.remove('drag-over-top','drag-over-bottom'));
+    if (!card || card.dataset.probId === _dragSrcId) return;
+    const rect = card.getBoundingClientRect();
+    card.classList.add(e.clientY < rect.top + rect.height / 2 ? 'drag-over-top' : 'drag-over-bottom');
+  });
+
+  container.addEventListener('dragleave', e => {
+    if (!e.relatedTarget || !container.contains(e.relatedTarget)) {
+      container.querySelectorAll('.prob-card').forEach(c => c.classList.remove('drag-over-top','drag-over-bottom'));
+    }
+  });
+
+  container.addEventListener('drop', e => {
+    e.preventDefault();
+    const card = e.target.closest('.prob-card[data-prob-id]');
+    container.querySelectorAll('.prob-card').forEach(c => c.classList.remove('drag-over-top','drag-over-bottom','drag-dragging'));
+    const src = _dragSrcId;
+    _dragSrcId = null;
+    if (!src || !card || card.dataset.probId === src) return;
+    const targetId = card.dataset.probId;
+    const rect = card.getBoundingClientRect();
+    const before = e.clientY < rect.top + rect.height / 2;
+    const arr = state.selectedProbs;
+    const from = arr.indexOf(src);
+    let to = arr.indexOf(targetId);
+    if (from < 0 || to < 0) return;
+    arr.splice(from, 1);
+    to = arr.indexOf(targetId);
+    arr.splice(before ? to : to + 1, 0, src);
+    render();
+  });
+
+  container.addEventListener('dragend', () => {
+    _dragSrcId = null;
+    container.querySelectorAll('.prob-card').forEach(c => c.classList.remove('drag-over-top','drag-over-bottom','drag-dragging'));
+  });
+}
+
 function moveProbUp(probId) {
   const idx = state.selectedProbs.indexOf(probId);
   if (idx > 0) {
@@ -2088,7 +2477,7 @@ function _obsolete_generateDOCX_disabled() {
   children.push(makeHeading('Informations du bien'));
   const clientRows = [
     ['Client', s.clientName || '—', 'Type', s.buildingType || '—'],
-    ['Adresse', (s.clientAddress || '—') + ' ' + (s.clientCity || ''), 'Époque', s.buildingAge || '—'],
+    ['Adresse', (s.clientAddress || '—') + ' ' + (s.clientCity || ''), '', ''],
     ['Téléphone', s.clientPhone || '—', 'Niveaux', s.buildingFloors || '—'],
     ['Email', s.clientEmail || '—', 'Date visite', s.visitDate ? new Date(s.visitDate).toLocaleDateString('fr-FR') : '—'],
   ];
@@ -2429,7 +2818,7 @@ function buildPdfMakeDoc() {
                 ]},
                 { stack: [
                   { text: [{ text: 'Type : ', bold: true }, s.buildingType || '-'], fontSize: c.clientFontSize || 10 },
-                  { text: [{ text: 'Epoque : ', bold: true }, s.buildingAge || '-'], fontSize: c.clientFontSize || 10 },
+                  
                   { text: [{ text: 'Niveaux : ', bold: true }, s.buildingFloors || '-'], fontSize: c.clientFontSize || 10 }
                 ]}
               ]}
@@ -2440,7 +2829,7 @@ function buildPdfMakeDoc() {
 
       { text: "L'objectif de ce rapport est d'identifier les pathologies de la maçonnerie de pierre et pisé, de hiérarchiser leurs degrés d'importance et de proposer des solutions adaptées à la conservation du bâti.", italics: true, color: '#555', fontSize: c.introFontSize || 10, margin: [0, 0, 0, 6] },
       s.introText ? { text: s.introText, fontSize: c.introFontSize || 10, margin: [0, 0, 0, 4] } : null,
-      s.observations ? { stack: [{ text: 'Observations générales :', bold: true, fontSize: c.introFontSize || 10, margin: [0, 0, 0, 2] }, ...htmlToNodes(s.observations)], margin: [0, 0, 0, 8] } : null,
+      s.showObservations !== false && s.observations ? { stack: [{ text: 'Observations générales :', bold: true, fontSize: c.introFontSize || 10, margin: [0, 0, 0, 2] }, ...htmlToNodes(s.observations)], margin: [0, 0, 0, 8] } : null,
 
       ...probsContent.filter(Boolean),
 
@@ -2449,11 +2838,10 @@ function buildPdfMakeDoc() {
         { stack: htmlToNodes(s.conclusion) }
       ]} : null,
 
-      { text: 'III Réseaux artisans', fontSize: c.artisansFontSize || 9.5, bold: true, margin: [0, 12, 0, 4] },
-      { text: 'Pour la réalisation des travaux, je recommande de faire appel à des artisans maîtrisant la construction traditionnelle. Des annuaires d\'artisans qualifiés sont disponibles sur les sites :', fontSize: c.artisansFontSize || 9.5, lineHeight: c.artisansLineHeight || 1.5, margin: [0, 0, 0, 4] },
-      { text: '- ASTERRE : asterre.org/les-pros-asterre', fontSize: c.artisansFontSize || 9.5, color: '#1E8449', margin: [8, 0, 0, 2] },
-      { text: '- RFCP : rfcp.fr', fontSize: c.artisansFontSize || 9.5, color: '#1E8449', margin: [8, 0, 0, 4] },
-      { text: 'Si les artisans proposés sur ces listes ne sont pas disponibles ou trop onéreux, il est tout à fait possible de faire appel à des artisans conventionnels, il faudra alors être vigilant au respect des règles de l\'art et à la bonne réalisation des ouvrages.', fontSize: c.artisansFontSize || 9.5, lineHeight: c.artisansLineHeight || 1.5 },
+      s.showArtisans !== false && s.artisans ? { stack: [
+        { text: '🏗 Artisans et ressources spécialisés', fontSize: c.artisansFontSize || 9.5, bold: true, margin: [0, 12, 0, 4], color: '#1E8449' },
+        ...htmlToNodes(s.artisans.includes('<') ? s.artisans : s.artisans.replace(/\n/g, '<br>'))
+      ]} : null,
     ].filter(Boolean),
   };
   return docDef;
@@ -2517,7 +2905,7 @@ function buildPDFHTML() {
           <div><strong>Client :</strong> ${s.clientName || '—'}</div>
           <div><strong>Type :</strong> ${s.buildingType || '—'}</div>
           <div><strong>Adresse :</strong> ${s.clientAddress || '—'} ${s.clientCity || ''}</div>
-          <div><strong>Époque :</strong> ${s.buildingAge || '—'}</div>
+          
           <div><strong>Tél :</strong> ${s.clientPhone || '—'}</div>
           <div><strong>Niveaux :</strong> ${s.buildingFloors || '—'}</div>
           <div><strong>Email :</strong> ${s.clientEmail || '—'}</div>
@@ -2528,7 +2916,7 @@ function buildPDFHTML() {
       <div class="pdf-intro">
         <p style="font-style:italic;color:#555;margin-bottom:8px;">L'objectif de ce rapport est d'identifier les pathologies de la maçonnerie de pierre et pisé, de hiérarchiser leurs degrés d'importance et de proposer des solutions adaptées à la conservation du bâti. L'étude se base sur les observations faites à la date mentionnée ci-dessus. Seules les pathologies visibles en l'état seront inventoriées et commentées. Les dessins de principe présents dans ce document ne doivent en aucun cas être considérés comme des détails d'exécution. Pour toute intervention sur le bâti ancien, il est préférable de faire appel à une entreprise spécialisée.</p>
         ${s.introText ? `<p style="margin-top:6px;">${s.introText}</p>` : ''}
-        ${s.observations ? `<p style="margin-top:8px"><strong>Observations générales :</strong> ${s.observations}</p>` : ''}
+        ${s.showObservations !== false && s.observations ? `<p style="margin-top:8px"><strong>Observations générales :</strong> ${s.observations}</p>` : ''}
       </div>
 
       ${probsHTML}
@@ -2540,16 +2928,11 @@ function buildPDFHTML() {
       </div>
       ` : ''}
 
+      ${s.showArtisans !== false && s.artisans ? `
       <div class="pdf-artisans">
-        <h3>III Réseaux artisans</h3>
-        <p>Pour la réalisation des travaux, je recommande de faire appel à des artisans maitrisant la construction traditionnelle. Des annuaires d'artisans qualifiés sont disponibles sur les sites :</p>
-        <p>- <strong>OIKOS</strong> : <a href="https://oikos-ecoconstruction.com/reseau-oikos/annuaire-pro/">https://oikos-ecoconstruction.com/reseau-oikos/annuaire-pro/</a></p>
-        <p>- <strong>Réseau Cabestan</strong> : <a href="https://www.cabestan.fr/spip.php?page=annuaire">https://www.cabestan.fr/spip.php?page=annuaire</a></p>
-        <p>- <strong>ASTERRE</strong> : <a href="https://www.asterre.org/les-pros-asterre/?cat=artisans-et-entreprises-de-mise-en-oeuvre#pros-filtre">https://www.asterre.org/les-pros-asterre/?cat=artisans-et-entreprises-de-mise-en-oeuvre#pros-filtre</a></p>
-        <p style="margin-top:8px;">Si les artisans proposés sur ces listes ne sont pas disponibles ou trop onéreux, il est tout à fait possible de faire appel à des artisans conventionnels, il faudra alors être vigilant au respect des règles de l'art et à la bonne réalisation des ouvrages.</p>
-        <p style="margin-top:8px;">L'ensemble des images et illustration de ce compte rendu sont extraites de l'ouvrage <strong><em>Réhabiliter le pisé, vers des pratiques adaptées</em></strong> des éditions ACTES SUD et CRATERRE.</p>
-        <p>Ce livre est disponible à la vente en contactant le secrétariat de l'association CRATERRE : <a href="mailto:secretariat@craterre.org">secretariat@craterre.org</a>. Prix 36 € hors livraison.</p>
-      </div>
+        <h3>🏗 Artisans et ressources spécialisés</h3>
+        <div style="white-space:pre-wrap;font-size:9.5pt;">${s.artisans}</div>
+      </div>` : ''}
 
       <div class="pdf-footer">
         <span>Atelier Canabae — 5, allée Susan Sontag — 69002 Lyon</span>
@@ -2567,6 +2950,7 @@ function render() {
   if (s.currentView === 'home') {
     app.innerHTML = renderHomePage();
     if (s.notification) app.innerHTML += '<div class="notification">' + s.notification + '</div>';
+    setTimeout(initHomeDragDrop, 0);
     return;
   }
 
@@ -2579,6 +2963,12 @@ function render() {
         <h1>CR Pisé <span>Atelier Canabae</span></h1>
       </div>
       <div class="header-actions">
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-light);">
+          <span title="Enregistrement automatique">⏱</span>
+          <input type="range" min="1" max="15" value="${state.autosaveMinutes||5}" oninput="setAutosaveMinutes(this.value);this.nextElementSibling.textContent=this.value+'min'" style="width:80px;accent-color:var(--earth);cursor:pointer;">
+          <span style="min-width:32px;">${state.autosaveMinutes||5}min</span>
+          ${state._unsavedChanges ? `<span style="color:var(--orange-important);font-size:11px;" title="Modifications non sauvegardées">●</span>` : `<span style="color:#27AE60;font-size:11px;" title="Sauvegardé">✓</span>`}
+        </div>
         <button class="btn btn-secondary" onclick="saveToGitHub()">☁️ Sauvegarder</button>
         <button class="btn btn-primary" onclick="downloadPDF()">⬇ Télécharger PDF</button>
       </div>
@@ -2631,8 +3021,6 @@ function render() {
               <input type="text" value="${esc(s.buildingFloors)}" oninput="state.buildingFloors=this.value" placeholder="R+1" />
             </div>
           </div>
-          <label>Époque de construction</label>
-          <input type="text" value="${esc(s.buildingAge)}" oninput="state.buildingAge=this.value" placeholder="Ex: XIXe siècle" />
           <div style="height:8px"></div>
         </div>
         </div>
@@ -2693,6 +3081,7 @@ function render() {
 
       ${s.showObsEditor ? renderObsEditor() : ''}
       ${s.showConcEditor ? renderConcEditor() : ''}
+      ${s.showArtisansEditor ? renderArtisansEditor() : ''}
 
       <!-- MAIN -->
       <div class="main-area">
@@ -2720,42 +3109,57 @@ function render() {
   if (concTA) concTA.value = s.conclusion;
   refreshPdfPreview();
   scheduleAutosave();
+  if (state.currentView === 'home') setTimeout(initHomeDragDrop, 0);
+  initProbDragDrop();
 }
 
 let _autosaveTimer = null;
 let _lastSavedSnapshot = null;
 
-function scheduleAutosave() {
-  if (!state.currentCRId) return;
-  const snapshot = JSON.stringify({ 
+function getSnapshot() {
+  return JSON.stringify({
     clientName: state.clientName, clientAddress: state.clientAddress,
     clientCity: state.clientCity, clientPhone: state.clientPhone,
     clientEmail: state.clientEmail, visitDate: state.visitDate,
-    buildingType: state.buildingType, buildingAge: state.buildingAge,
-    buildingFloors: state.buildingFloors, observations: state.observations,
-    selectedProbs: state.selectedProbs, probData: state.probData,
-    conclusion: state.conclusion
+    buildingType: state.buildingType, buildingFloors: state.buildingFloors,
+    observations: state.observations, selectedProbs: state.selectedProbs,
+    probData: state.probData, conclusion: state.conclusion,
+    artisans: state.artisans
   });
-  if (snapshot === _lastSavedSnapshot) return;
+}
+
+function scheduleAutosave() {
+  if (!state.currentCRId) return;
+  const snapshot = getSnapshot();
+  state._unsavedChanges = (snapshot !== _lastSavedSnapshot);
+  if (!state._unsavedChanges) return;
   clearTimeout(_autosaveTimer);
+  const delay = (state.autosaveMinutes || 5) * 60 * 1000;
   _autosaveTimer = setTimeout(async function() {
-    const current = JSON.stringify({ 
-      clientName: state.clientName, clientAddress: state.clientAddress,
-      clientCity: state.clientCity, clientPhone: state.clientPhone,
-      clientEmail: state.clientEmail, visitDate: state.visitDate,
-      buildingType: state.buildingType, buildingAge: state.buildingAge,
-      buildingFloors: state.buildingFloors, observations: state.observations,
-      selectedProbs: state.selectedProbs, probData: state.probData,
-      conclusion: state.conclusion
-    });
+    const current = getSnapshot();
     if (current === _lastSavedSnapshot) return;
     _lastSavedSnapshot = current;
-    const btn = document.querySelector('.btn-secondary');
-    if (btn) btn.innerHTML = '💾 Sauvegarde...';
+    state._unsavedChanges = false;
     await saveToGitHub();
-    if (btn) btn.innerHTML = '☁️ Sauvegarder';
-  }, 4000);
+  }, delay);
 }
+
+function setAutosaveMinutes(val) {
+  const n = Math.max(1, Math.min(15, parseInt(val) || 5));
+  state.autosaveMinutes = n;
+  localStorage.setItem('cr_autosave_minutes', n);
+  clearTimeout(_autosaveTimer);
+  scheduleAutosave();
+  render();
+}
+
+window.addEventListener('beforeunload', function(e) {
+  if (state.currentView !== 'editor') return;
+  if (!state._unsavedChanges) return;
+  e.preventDefault();
+  e.returnValue = '';
+  return '';
+});
 
 function refreshPdfPreview() {
   var iframe = document.getElementById('pdf-preview-iframe');
@@ -2791,10 +3195,14 @@ function renderEditView() {
     if (!lib || !data) return;
 
     html += `
-      <div class="prob-card">
+      <div class="prob-card ${state.collapsedProbs[probId]?'collapsed':''}"
+        data-prob-id="${probId}"
+        draggable="true"
+        >
         <div class="prob-card-header">
           <span class="drag-handle">⠿</span>
-          <span class="prob-card-title">${idx+1}. ${lib.name}</span>
+          <button class="collapse-btn" onclick="toggleCollapse('${probId}')" title="${state.collapsedProbs[probId]?'Déplier':'Réduire'}">${state.collapsedProbs[probId]?'▶':'▼'}</button>
+          <span class="prob-card-title" style="cursor:pointer" onclick="toggleCollapse('${probId}')">${idx+1}. ${lib.name}</span>
           <select class="priority-select" onchange="updateProbPriority('${probId}', this.value)">
             <option value="urgent" ${data.priority==='urgent'?'selected':''}>🔴 Urgent</option>
             <option value="important" ${data.priority==='important'?'selected':''}>🟠 Important</option>
@@ -2809,7 +3217,35 @@ function renderEditView() {
             <input type="checkbox" ${data.showDesc!==false?'checked':''} onchange="state.probData['${probId}'].showDesc=this.checked;render()" title="Inclure dans le PDF">
           </div>
           <textarea data-prob-textarea="${probId}" oninput="updateProbText('${probId}', this.value)" rows="5" style="opacity:${data.showDesc!==false?'1':'0.4'}"></textarea>
-          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;margin-bottom:4px;">
+
+          <div class="photo-area" style="margin-top:10px;">
+            <div class="photo-area-title">📷 Photos pathologie</div>
+            <div class="photo-grid">
+              ${data.photos.map(photo => `
+                <div style="flex-shrink:0;">
+                  <div class="photo-thumb" style="width:150px; height:113px;">
+                    <img src="${photo.data}" />
+                    <button class="photo-remove" onclick="removePhoto('${probId}', ${photo.id})">✕</button>
+                    <div class="photo-legend" contenteditable="true" onblur="updatePhotoLegend('${probId}', ${photo.id}, this.textContent)">${esc(photo.legend)}</div>
+                  </div>
+                  <div style="display:flex;gap:4px;margin-top:4px;">
+                    <button onclick="updatePhotoSize('${probId}', ${photo.id}, 150)" style="flex:1;padding:2px 0;font-size:10px;cursor:pointer;background:${(photo.size||150)<400?'#8B7355':'#eee'};color:${(photo.size||150)<400?'#fff':'#333'};border:1px solid #ccc;border-radius:3px;">⅓</button>
+                    <button onclick="updatePhotoSize('${probId}', ${photo.id}, 480)" style="flex:1;padding:2px 0;font-size:10px;cursor:pointer;background:${(photo.size||150)>=400?'#8B7355':'#eee'};color:${(photo.size||150)>=400?'#fff':'#333'};border:1px solid #ccc;border-radius:3px;">▣</button>
+                  </div>
+                </div>
+              `).join('')}
+              <label class="photo-add-btn"
+                ondragover="event.preventDefault();this.classList.add('drag-over')"
+                ondragleave="this.classList.remove('drag-over')"
+                ondrop="event.preventDefault();this.classList.remove('drag-over');addPhotos('${probId}',event.dataTransfer.files)">
+                <span style="font-size:20px">+</span>
+                <span>Ajouter / Déposer</span>
+                <input type="file" accept="image/*" multiple style="display:none" onchange="addPhotos('${probId}', this.files)">
+              </label>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px;margin-top:12px;margin-bottom:4px;">
             <label style="font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;">Traitement préconisé</label>
             <input type="checkbox" ${data.showTraitement!==false?'checked':''} onchange="state.probData['${probId}'].showTraitement=this.checked;render()" title="Inclure dans le PDF">
           </div>
@@ -2831,9 +3267,12 @@ function renderEditView() {
                   </div>
                 </div>
               `).join('')}
-              <label class="photo-add-btn">
+              <label class="photo-add-btn" 
+                ondragover="event.preventDefault();this.classList.add('drag-over')"
+                ondragleave="this.classList.remove('drag-over')"
+                ondrop="event.preventDefault();this.classList.remove('drag-over');addPhotos('${probId}',event.dataTransfer.files)">
                 <span style="font-size:20px">+</span>
-                <span>Ajouter</span>
+                <span>Ajouter / Déposer</span>
                 <input type="file" accept="image/*" multiple style="display:none" onchange="addPhotos('${probId}', this.files)">
               </label>
             </div>
@@ -2850,14 +3289,24 @@ function renderEditView() {
 
   // Observations
   html = `
-    <div class="cr-section-title">Observations générales</div>
+    <div class="cr-section-title">Observations générales
+      <label style="font-size:12px;font-weight:400;margin-left:12px;cursor:pointer;">
+        <input type="checkbox" ${state.showObservations!==false?'checked':''} onchange="state.showObservations=this.checked;render()" style="margin-right:4px;">
+        Inclure dans le PDF
+      </label>
+    </div>
     <div class="prob-card">
       <div class="prob-card-body">
-        <div class="obs-preview" onclick="openObsEditor()" style="min-height:60px;max-height:120px;">${state.observations || ''}</div>
+        <div class="obs-preview" onclick="openObsEditor()" style="min-height:60px;max-height:120px;opacity:${state.showObservations!==false?'1':'0.4'}">${state.observations || ''}</div>
       </div>
     </div>
-    <div class="cr-section-title" style="margin-top:28px">Problématiques identifiées (${s.selectedProbs.length})</div>
-  ` + html;
+    <div style="display:flex;align-items:center;gap:8px;margin-top:28px;margin-bottom:16px;">
+      <div class="cr-section-title" style="margin:0;flex:1">Problématiques identifiées (${s.selectedProbs.length})</div>
+      <button class="btn btn-sm btn-outline" onclick="collapseAll()" title="Tout réduire">⊟ Réduire</button>
+      <button class="btn btn-sm btn-outline" onclick="expandAll()" title="Tout déplier">⊞ Déplier</button>
+      <button class="btn btn-sm btn-secondary" onclick="sortByPriority()" title="Trier par importance">↕ Trier par importance</button>
+    </div>
+  ` + `<div id="prob-cards-container">` + html + `</div>`;
 
   // Conclusion
   html += `
@@ -2875,15 +3324,16 @@ function renderEditView() {
       </div>
     </div>
 
-    <div class="cr-section-title" style="margin-top:28px">🏗 Artisans et ressources spécialisés</div>
+    <div class="cr-section-title" style="margin-top:28px">
+      🏗 Artisans et ressources spécialisés
+      <label style="font-size:12px;font-weight:400;margin-left:12px;cursor:pointer;">
+        <input type="checkbox" ${state.showArtisans!==false?'checked':''} onchange="state.showArtisans=this.checked;render()" style="margin-right:4px;">
+        Inclure dans le PDF
+      </label>
+    </div>
     <div class="prob-card">
-      <div class="prob-card-body" style="font-size:13px;line-height:1.6;color:var(--text-light);">
-        <p style="margin:0 0 6px;">Pour la réalisation des travaux, je recommande de faire appel à des artisans maitrisant la construction traditionnelle. Des annuaires d'artisans qualifiés sont disponibles sur les sites :</p>
-        <p style="margin:2px 0;">- <strong>OIKOS</strong> : <a href="https://oikos-ecoconstruction.com/reseau-oikos/annuaire-pro/" target="_blank">oikos-ecoconstruction.com</a></p>
-        <p style="margin:2px 0;">- <strong>Réseau Cabestan</strong> : <a href="https://www.cabestan.fr/spip.php?page=annuaire" target="_blank">cabestan.fr</a></p>
-        <p style="margin:2px 0;">- <strong>ASTERRE</strong> : <a href="https://www.asterre.org/les-pros-asterre/?cat=artisans-et-entreprises-de-mise-en-oeuvre#pros-filtre" target="_blank">asterre.org</a></p>
-        <p style="margin:6px 0 2px;">Si les artisans proposés sur ces listes ne sont pas disponibles ou trop onéreux, il est tout à fait possible de faire appel à des artisans conventionnels.</p>
-        <p style="margin:2px 0;font-size:11px;color:#555;"><em>Réhabiliter le pisé, vers des pratiques adaptées</em> — ACTES SUD et CRATERRE. Contact : <a href="mailto:secretariat@craterre.org">secretariat@craterre.org</a>. Prix 36 €.</p>
+      <div class="prob-card-body">
+        <div class="obs-preview" onclick="openArtisansEditor()" style="min-height:60px;max-height:120px;opacity:${state.showArtisans!==false?'1':'0.4'};white-space:pre-wrap;">${state.artisans || ''}</div>
       </div>
     </div>
   `;
@@ -2893,11 +3343,68 @@ function renderEditView() {
       <div style="flex:1;min-width:0;overflow-y:auto;padding:20px 24px;" id="edit-scroll-area">
         ${html}
       </div>
+      ${state.showPdfPreview ? `
       <div style="width:520px;flex-shrink:0;background:#e0ddd8;border-left:1px solid var(--border);display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:#d4d0ca;border-bottom:1px solid #c0bbb4;">
+          <span style="font-size:12px;font-weight:600;color:#555;">Aperçu PDF</span>
+          <button onclick="setState({showPdfPreview:false})" style="background:none;border:none;cursor:pointer;font-size:16px;color:#888;" title="Masquer l'aperçu">✕</button>
+        </div>
         <iframe id="pdf-preview-iframe" style="flex:1;width:100%;border:none;" src="about:blank"></iframe>
+      </div>` : `
+      <div style="position:fixed;bottom:24px;right:24px;z-index:50;">
+        <button onclick="setState({showPdfPreview:true})" class="btn btn-secondary" style="box-shadow:0 4px 12px rgba(0,0,0,0.2);">👁 Aperçu PDF</button>
+      </div>`}
+    </div>
+  `;
+}
+
+function renderArtisansEditor() {
+  return `
+    <div class="modal-overlay" onclick="closeArtisansEditor()">
+      <div class="modal editor-modal" onclick="event.stopPropagation()">
+        <h3>🏗 Artisans et ressources spécialisés</h3>
+        <div class="editor-toolbar">
+          <select onchange="execArtisansCmd('fontSize',this.value)" title="Taille">
+            <option value="2">Petit</option>
+            <option value="3" selected>Normal</option>
+            <option value="4">Moyen</option>
+            <option value="5">Grand</option>
+          </select>
+          <div class="sep"></div>
+          <button onclick="execArtisansCmd('bold')" title="Gras"><b>G</b></button>
+          <button onclick="execArtisansCmd('italic')" title="Italique"><i>I</i></button>
+          <button onclick="execArtisansCmd('removeFormat')" title="Normal">✕</button>
+          <div class="sep"></div>
+          <button onclick="execArtisansCmd('justifyLeft')" title="Gauche">⫷</button>
+          <button onclick="execArtisansCmd('justifyCenter')" title="Centrer">⫿</button>
+          <button onclick="execArtisansCmd('justifyRight')" title="Droite">⫸</button>
+          <button onclick="execArtisansCmd('justifyFull')" title="Justifié">☰</button>
+          <div class="sep"></div>
+          <button onclick="insertArtisansHR()" title="Ligne">―</button>
+          <button onclick="execArtisansCmd('insertOrderedList')" title="Liste numérotée">1.</button>
+          <div class="sep"></div>
+          <button onclick="execArtisansCmd('undo')" title="Annuler">↩</button>
+          <button onclick="execArtisansCmd('redo')" title="Rétablir">↪</button>
+        </div>
+        <div id="artisans-editor" class="editor-content" contenteditable="true"></div>
+        <div class="modal-actions">
+          <button class="btn btn-outline" onclick="closeArtisansEditor()">Fermer</button>
+          <button class="btn btn-secondary" onclick="saveArtisansAsDefault()" title="Enregistrer comme texte par défaut pour les prochains CR">💾 Enreg. comme modèle</button>
+          <button class="btn btn-primary" onclick="closeArtisansEditor()">✓ Enregistrer</button>
+        </div>
       </div>
     </div>
   `;
+}
+
+function execArtisansCmd(cmd, val) {
+  document.execCommand(cmd, false, val || null);
+  document.getElementById('artisans-editor').focus();
+}
+
+function insertArtisansHR() {
+  document.getElementById('artisans-editor').focus();
+  document.execCommand('insertHTML', false, '<hr>');
 }
 
 function renderConcEditor() {
@@ -2906,55 +3413,27 @@ function renderConcEditor() {
       <div class="modal editor-modal" onclick="event.stopPropagation()">
         <h3>Conclusion et recommandations</h3>
         <div class="editor-toolbar">
-          <select onchange="execFontName(this)" title="Police">
-            <option value="DM Sans">DM Sans</option>
-            <option value="Source Serif 4">Source Serif</option>
-            <option value="Georgia">Georgia</option>
-            <option value="Arial">Arial</option>
-            <option value="Courier New">Courier</option>
-            <option value="Times New Roman">Times</option>
-          </select>
           <select onchange="execFontSize(this)" title="Taille">
-            <option value="1">Très petit</option>
             <option value="2">Petit</option>
             <option value="3" selected>Normal</option>
             <option value="4">Moyen</option>
             <option value="5">Grand</option>
-            <option value="6">Très grand</option>
           </select>
-          <select onchange="execCmd('formatBlock',this.value);this.selectedIndex=0" title="Style">
-            <option value="" disabled selected>Style</option>
-            <option value="<h1>">Titre 1</option>
-            <option value="<h2>">Titre 2</option>
-            <option value="<h3>">Titre 3</option>
-            <option value="<h4>">Titre 4</option>
-            <option value="<p>">Paragraphe</option>
-            <option value="<blockquote>">Citation</option>
-          </select>
-        </div>
-        <div class="editor-toolbar">
+          <div class="sep"></div>
           <button onclick="execCmd('bold')" title="Gras"><b>G</b></button>
           <button onclick="execCmd('italic')" title="Italique"><i>I</i></button>
-          <button onclick="execCmd('underline')" title="Souligné"><u>S</u></button>
-          <button onclick="execCmd('strikeThrough')" title="Barré"><s>B</s></button>
+          <button onclick="execCmd('removeFormat')" title="Normal">✕</button>
           <div class="sep"></div>
           <button onclick="execCmd('justifyLeft')" title="Gauche">⫷</button>
           <button onclick="execCmd('justifyCenter')" title="Centrer">⫿</button>
           <button onclick="execCmd('justifyRight')" title="Droite">⫸</button>
+          <button onclick="execCmd('justifyFull')" title="Justifié">☰</button>
           <div class="sep"></div>
-          <button onclick="execCmd('insertUnorderedList')" title="Liste à puces">•≡</button>
+          <button onclick="insertHR()" title="Ligne de séparation">―</button>
           <button onclick="execCmd('insertOrderedList')" title="Liste numérotée">1.</button>
-          <button onclick="execCmd('indent')" title="Indenter">→</button>
-          <button onclick="execCmd('outdent')" title="Désindenter">←</button>
-          <div class="sep"></div>
-          <button onclick="insertTable()" title="Tableau">☷</button>
-          <button onclick="insertEditorImage()" title="Image">🖼</button>
-          <button onclick="insertLink()" title="Lien">🔗</button>
-          <button onclick="insertHR()" title="Ligne">―</button>
           <div class="sep"></div>
           <button onclick="execCmd('undo')" title="Annuler">↩</button>
           <button onclick="execCmd('redo')" title="Rétablir">↪</button>
-          <button onclick="execCmd('removeFormat')" title="Effacer formatage">✕</button>
         </div>
         <div id="conc-editor" class="editor-content" contenteditable="true"></div>
         <div class="modal-actions">
@@ -2971,56 +3450,29 @@ function renderObsEditor() {
     <div class="modal-overlay" onclick="closeObsEditor()">
       <div class="modal editor-modal" onclick="event.stopPropagation()">
         <h3>Observations générales</h3>
+        
         <div class="editor-toolbar">
-          <select onchange="execFontName(this)" title="Police">
-            <option value="DM Sans">DM Sans</option>
-            <option value="Source Serif 4">Source Serif</option>
-            <option value="Georgia">Georgia</option>
-            <option value="Arial">Arial</option>
-            <option value="Courier New">Courier</option>
-            <option value="Times New Roman">Times</option>
-          </select>
           <select onchange="execFontSize(this)" title="Taille">
-            <option value="1">Très petit</option>
             <option value="2">Petit</option>
             <option value="3" selected>Normal</option>
             <option value="4">Moyen</option>
             <option value="5">Grand</option>
-            <option value="6">Très grand</option>
           </select>
-          <select onchange="execCmd('formatBlock',this.value);this.selectedIndex=0" title="Style">
-            <option value="" disabled selected>Style</option>
-            <option value="<h1>">Titre 1</option>
-            <option value="<h2>">Titre 2</option>
-            <option value="<h3>">Titre 3</option>
-            <option value="<h4>">Titre 4</option>
-            <option value="<p>">Paragraphe</option>
-            <option value="<blockquote>">Citation</option>
-          </select>
-        </div>
-        <div class="editor-toolbar">
+          <div class="sep"></div>
           <button onclick="execCmd('bold')" title="Gras"><b>G</b></button>
           <button onclick="execCmd('italic')" title="Italique"><i>I</i></button>
-          <button onclick="execCmd('underline')" title="Souligné"><u>S</u></button>
-          <button onclick="execCmd('strikeThrough')" title="Barré"><s>B</s></button>
+          <button onclick="execCmd('removeFormat')" title="Normal">✕</button>
           <div class="sep"></div>
           <button onclick="execCmd('justifyLeft')" title="Gauche">⫷</button>
           <button onclick="execCmd('justifyCenter')" title="Centrer">⫿</button>
           <button onclick="execCmd('justifyRight')" title="Droite">⫸</button>
+          <button onclick="execCmd('justifyFull')" title="Justifié">☰</button>
           <div class="sep"></div>
-          <button onclick="execCmd('insertUnorderedList')" title="Liste à puces">•≡</button>
+          <button onclick="insertHR()" title="Ligne de séparation">―</button>
           <button onclick="execCmd('insertOrderedList')" title="Liste numérotée">1.</button>
-          <button onclick="execCmd('indent')" title="Indenter">→</button>
-          <button onclick="execCmd('outdent')" title="Désindenter">←</button>
-          <div class="sep"></div>
-          <button onclick="insertTable()" title="Tableau">☷</button>
-          <button onclick="insertEditorImage()" title="Image">🖼</button>
-          <button onclick="insertLink()" title="Lien">🔗</button>
-          <button onclick="insertHR()" title="Ligne">―</button>
           <div class="sep"></div>
           <button onclick="execCmd('undo')" title="Annuler">↩</button>
           <button onclick="execCmd('redo')" title="Rétablir">↪</button>
-          <button onclick="execCmd('removeFormat')" title="Effacer formatage">✕</button>
         </div>
         <div id="obs-editor" class="editor-content" contenteditable="true"></div>
         <div class="modal-actions">
@@ -3062,22 +3514,79 @@ function renderHomePage() {
 
       ${connected ? `
         <div class="cr-list">
-          <div class="cr-list-title">Comptes rendus sauvegardés</div>
-          ${s.savedCRList.length === 0 ? `
-            <div class="cr-list-empty">
-              Aucun CR sauvegardé pour le moment
-            </div>
-          ` : s.savedCRList.map(cr => `
-            <div class="cr-list-item" onclick="loadFromGitHub('${cr.id}')">
-              <div class="cr-item-info">
-                <div class="cr-item-name">${esc(cr.name)}</div>
-                <div class="cr-item-date">${cr.date ? 'Modifié le ' + cr.date : ''}</div>
-              </div>
-              <div class="cr-item-actions">
-                <button class="btn btn-sm btn-danger" onclick="deleteFromGitHub('${cr.id}', event)">🗑</button>
-              </div>
-            </div>
-          `).join('')}
+          <div class="cr-list-title" style="display:flex;align-items:center;justify-content:space-between;">
+            <span>Comptes rendus sauvegardés</span>
+            <button class="btn btn-sm btn-outline" onclick="createDossier()">📁 Nouveau dossier</button>
+          </div>
+          <div id="cr-home-list">
+            ${(() => {
+              if (s.savedCRList.length === 0 && s.dossiers.length === 0)
+                return `<div class="cr-list-empty">Aucun CR sauvegardé pour le moment</div>`;
+
+              const crIcon = cr => `
+                <div class="explorer-cr" draggable="true" data-cr-id="${cr.id}"
+                  ondblclick="loadFromGitHub('${cr.id}')">
+                  <span class="cr-icon" style="pointer-events:none;">📄</span>
+                  <div class="cr-label" style="pointer-events:none;">${esc(cr.name)}</div>
+                  <div class="cr-date" style="pointer-events:none;">${cr.date || ''}</div>
+                  <button class="cr-delete-btn" onclick="deleteFromGitHub('${cr.id}', event)" title="Supprimer">✕</button>
+                </div>`;
+
+              const crsSansDossier = s.savedCRList.filter(cr => !cr.dossierId);
+
+              // Dossiers ouverts = affichage détaillé ; fermés = icône dans la grille
+              // Défaut = fermé (icône), ouvert seulement si folderOpen[id] === true
+              const dossiersFermes = s.dossiers.filter(d => !state.folderOpen[d.id]);
+              const dossiersOuverts = s.dossiers.filter(d => state.folderOpen[d.id] === true);
+
+              // Grille du haut : dossiers fermés (icônes) + CR sans dossier
+              const grilleItems = [
+                ...dossiersFermes.map(d => {
+                  const n = s.savedCRList.filter(cr => cr.dossierId === d.id).length;
+                  return `<div class="explorer-folder" data-folder-id="${d.id}"
+                    ondblclick="toggleFolder('${d.id}')"
+                    onclick="event.stopPropagation()">
+                    <span class="folder-icon" style="pointer-events:none;">📁</span>
+                    <div class="folder-label" style="pointer-events:none;">${esc(d.nom)}</div>
+                    <div class="folder-count" style="pointer-events:none;">${n} CR</div>
+                    <button class="folder-menu-btn" onclick="event.stopPropagation();deleteDossier('${d.id}')">✕</button>
+                  </div>`;
+                }),
+                ...crsSansDossier.map(crIcon)
+              ].join('');
+
+              const grilleHtml = (grilleItems || s.dossiers.length === 0) ? `
+                <div class="no-folder-section">
+                  ${grilleItems ? `<div class="explorer-grid">${grilleItems}</div>` : ''}
+                </div>` : '';
+
+              // Dossiers ouverts : vue détaillée avec zone de drop
+              const dossiersOuvertsHtml = dossiersOuverts.map(d => {
+                const crsInFolder = s.savedCRList.filter(cr => cr.dossierId === d.id);
+                return `
+                  <div class="folder-open-view">
+                    <div class="folder-open-header" ondblclick="toggleFolder('${d.id}')">
+                      <span style="font-size:18px;pointer-events:none;">📂</span>
+                      <input class="folder-name-input" value="${esc(d.nom)}"
+                        onclick="event.stopPropagation()"
+                        onblur="renameDossier('${d.id}', this.value)"
+                        onkeydown="if(event.key==='Enter')this.blur()">
+                      <span style="font-size:11px;color:var(--text-light);margin-right:8px;pointer-events:none;">${crsInFolder.length} CR</span>
+                      <button class="btn btn-sm btn-outline" style="font-size:11px;padding:2px 8px;" onclick="event.stopPropagation();deleteDossier('${d.id}')">🗑</button>
+                    </div>
+                    <div class="folder-open-body" data-folder-id="${d.id}">
+                      <div class="explorer-grid">
+                        ${crsInFolder.length === 0
+                          ? `<div style="text-align:center;padding:16px;font-size:12px;color:var(--text-light);width:100%;pointer-events:none;">Glissez des CR ici</div>`
+                          : crsInFolder.map(crIcon).join('')}
+                      </div>
+                    </div>
+                  </div>`;
+              }).join('');
+
+              return grilleHtml + dossiersOuvertsHtml;
+            })()}
+          </div>
         </div>
       ` : ''}
     </div>
