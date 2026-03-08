@@ -1896,7 +1896,19 @@ function initHomeDragDrop() {
 }
 
 async function saveToGitHub() {
-  showNotification('⏳ Sauvegarde en cours...');
+  state._saving = true;
+  state._saveStartTime = Date.now();
+  state._saveError = false;
+  render();
+  // Timer qui met à jour l'affichage chaque seconde
+  if (window._saveTimer) clearInterval(window._saveTimer);
+  window._saveTimer = setInterval(() => {
+    const btn = document.getElementById('save-status-btn');
+    if (btn && state._saving) {
+      const s = Math.round((Date.now() - state._saveStartTime) / 1000);
+      btn.innerHTML = `⏳ ${s}s…`;
+    }
+  }, 500);
   
   const saveData = {
     clientName: state.clientName,
@@ -1932,10 +1944,19 @@ async function saveToGitHub() {
       });
       if (res && res[0]) state.currentCRId = res[0].id;
     }
-    showNotification('✓ Sauvegardé');
+    clearInterval(window._saveTimer);
+    state._saving = false;
+    state._saveError = false;
+    state._lastSaveSeconds = Math.round((Date.now() - state._saveStartTime) / 1000);
+    state._unsavedChanges = false;
+    showNotification(`✓ Sauvegardé en ${state._lastSaveSeconds}s`);
     await loadCRList();
     render();
   } catch(err) {
+    clearInterval(window._saveTimer);
+    state._saving = false;
+    state._saveError = true;
+    render();
     showNotification('✗ Erreur : ' + err.message);
   }
 }
@@ -3004,7 +3025,9 @@ function render() {
           <span style="min-width:32px;">${state.autosaveMinutes||5}min</span>
           ${state._unsavedChanges ? `<span style="color:var(--orange-important);font-size:11px;" title="Modifications non sauvegardées">●</span>` : `<span style="color:#27AE60;font-size:11px;" title="Sauvegardé">✓</span>`}
         </div>
-        <button class="btn btn-secondary" onclick="saveToGitHub()">☁️ Sauvegarder</button>
+        <button id="save-status-btn" class="btn ${state._saving ? 'btn-outline' : state._saveError ? 'btn-danger' : 'btn-secondary'}" onclick="saveToGitHub()" ${state._saving ? 'disabled' : ''} style="min-width:130px;">
+          ${state._saving ? `⏳ 0s…` : state._saveError ? `✗ Réessayer` : state._lastSaveSeconds ? `☁️ Sauvegardé (${state._lastSaveSeconds}s)` : `☁️ Sauvegarder`}
+        </button>
         <button class="btn btn-primary" onclick="downloadPDF()">⬇ Télécharger PDF</button>
       </div>
     </div>
