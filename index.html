@@ -3350,12 +3350,12 @@ function renderEditView() {
         ${html}
       </div>
       ${state.showPdfPreview ? `
-      <div style="width:520px;flex-shrink:0;background:#e0ddd8;border-left:1px solid var(--border);display:flex;flex-direction:column;">
+      <div style="width:520px;flex-shrink:0;background:#e0ddd8;border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;height:100%;">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:#d4d0ca;border-bottom:1px solid #c0bbb4;">
           <span style="font-size:12px;font-weight:600;color:#555;">Aperçu PDF</span>
           <button onclick="setState({showPdfPreview:false})" style="background:none;border:none;cursor:pointer;font-size:16px;color:#888;" title="Masquer l'aperçu">✕</button>
         </div>
-        <iframe id="pdf-preview-iframe" style="flex:1;width:100%;border:none;" src="about:blank"></iframe>
+        <iframe id="pdf-preview-iframe" style="flex:1;width:100%;border:none;min-height:0;height:100%;" src="about:blank"></iframe>
       </div>` : `
       <div style="position:fixed;bottom:24px;right:24px;z-index:50;">
         <button onclick="setState({showPdfPreview:true})" class="btn btn-secondary" style="box-shadow:0 4px 12px rgba(0,0,0,0.2);">👁 Aperçu PDF</button>
