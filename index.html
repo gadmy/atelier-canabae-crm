@@ -1657,6 +1657,21 @@ function updateProbPriority(probId, priority) {
   render();
 }
 
+async function compressImage(dataUrl, maxWidth=1200, quality=0.75) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let w = img.width, h = img.height;
+      if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = dataUrl;
+  });
+}
+
 async function pdfToImage(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -1680,9 +1695,10 @@ async function pdfToImage(file) {
 function addPhotos(probId, files) {
   Array.from(files).forEach(async file => {
     try {
-      const data = file.type === 'application/pdf'
+      const raw = file.type === 'application/pdf'
         ? await pdfToImage(file)
         : await new Promise((res) => { const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsDataURL(file); });
+      const data = await compressImage(raw);
       state.probData[probId].photos.push({
         data,
         legend: file.name.replace(/\.[^.]+$/, ''),
@@ -1697,9 +1713,10 @@ function addPhotosTraitement(probId, files) {
   if (!state.probData[probId].photosTraitement) state.probData[probId].photosTraitement = [];
   Array.from(files).forEach(async file => {
     try {
-      const data = file.type === 'application/pdf'
+      const raw = file.type === 'application/pdf'
         ? await pdfToImage(file)
         : await new Promise((res) => { const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsDataURL(file); });
+      const data = await compressImage(raw);
       state.probData[probId].photosTraitement.push({
         data,
         legend: file.name.replace(/\.[^.]+$/, ''),
