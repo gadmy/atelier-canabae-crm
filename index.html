@@ -1635,6 +1635,7 @@ function toggleProb(probId) {
     s.probData[probId] = {
       text: lib ? lib.defaultText : '',
       traitement: lib ? (lib.defaultTraitement || '') : '',
+      localisation: '',
       showDesc: true,
       showTraitement: true,
       priority: 'important',
@@ -2525,6 +2526,10 @@ function buildPdfMakeDoc() {
       ]}
     ]});
 
+    if (data.localisation) {
+      probsContent.push({ text: 'Localisation', fontSize: 9, bold: true, color: '#888', margin: [0, 4, 0, 2], decoration: 'underline' });
+      probsContent.push({ text: data.localisation, fontSize: c.diagFontSize || 10.5, lineHeight: c.diagLineHeight || 1.55, margin: [0, 0, 0, 4] });
+    }
     if (data.text && data.showDesc !== false) {
       probsContent.push({ text: data.text, fontSize: c.diagFontSize || 10.5, lineHeight: c.diagLineHeight || 1.55, margin: [0, 4, 0, 0] });
     }
@@ -2541,8 +2546,8 @@ function buildPdfMakeDoc() {
           if (currentRow.length > 0) { rows.push(currentRow); currentRow = []; }
           rows.push([{ stack: [{ image: p.data, width: 495 }, { text: p.legend || '', fontSize: 8, color: '#666', margin: [0, 2, 0, 0] }], width: 495 }]);
         } else {
-          currentRow.push({ stack: [{ image: p.data, width: 155 }, { text: p.legend || '', fontSize: 8, color: '#666', margin: [0, 2, 0, 0] }], width: 163 });
-          if (currentRow.length === 3) { rows.push(currentRow); currentRow = []; }
+          currentRow.push({ stack: [{ image: p.data, width: 240 }, { text: p.legend || '', fontSize: 8, color: '#666', margin: [0, 2, 0, 0] }], width: 248 });
+          if (currentRow.length === 2) { rows.push(currentRow); currentRow = []; }
         }
       });
       if (currentRow.length > 0) rows.push(currentRow);
@@ -2560,8 +2565,8 @@ function buildPdfMakeDoc() {
           if (currentRowT.length > 0) { rowsT.push(currentRowT); currentRowT = []; }
           rowsT.push([{ stack: [{ image: p.data, width: 495 }, { text: p.legend || '', fontSize: 8, color: '#666', margin: [0, 2, 0, 0] }], width: 495 }]);
         } else {
-          currentRowT.push({ stack: [{ image: p.data, width: 155 }, { text: p.legend || '', fontSize: 8, color: '#666', margin: [0, 2, 0, 0] }], width: 163 });
-          if (currentRowT.length === 3) { rowsT.push(currentRowT); currentRowT = []; }
+          currentRowT.push({ stack: [{ image: p.data, width: 240 }, { text: p.legend || '', fontSize: 8, color: '#666', margin: [0, 2, 0, 0] }], width: 248 });
+          if (currentRowT.length === 2) { rowsT.push(currentRowT); currentRowT = []; }
         }
       });
       if (currentRowT.length > 0) rowsT.push(currentRowT);
@@ -2635,7 +2640,7 @@ function buildPdfMakeDoc() {
       ]} : null,
 
       s.showArtisans !== false && s.artisans ? { stack: [
-        { text: '🏗 Artisans et ressources spécialisés', fontSize: c.artisansFontSize || 9.5, bold: true, margin: [0, 12, 0, 4], color: '#1E8449' },
+        { text: '🏗 Artisans et ressources spécialisés', fontSize: c.artisansFontSize || 9.5, bold: true, margin: [0, 12, 0, 4], color: '#8B6914' },
         ...htmlToNodes(s.artisans.includes('<') ? s.artisans : s.artisans.replace(/\n/g, '<br>'))
       ]} : null,
     ].filter(Boolean),
@@ -3011,6 +3016,11 @@ function renderEditView() {
         </div>
         <div class="prob-card-body">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <label style="font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;">Localisation</label>
+          </div>
+          <textarea oninput="state.probData['${probId}'].localisation=this.value" rows="2" placeholder="Décrire la localisation...">${esc(data.localisation||'')}</textarea>
+
+          <div style="display:flex;align-items:center;gap:8px;margin-top:12px;margin-bottom:4px;">
             <label style="font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;">Description de la pathologie</label>
             <input type="checkbox" ${data.showDesc!==false?'checked':''} onchange="state.probData['${probId}'].showDesc=this.checked;render()" title="Inclure dans le PDF">
           </div>
