@@ -1734,6 +1734,23 @@ function removePhoto(probId, photoId) {
   render();
 }
 
+function removePhotoTraitement(probId, photoId) {
+  const photos = state.probData[probId].photosTraitement || [];
+  const idx = photos.findIndex(p => p.id == photoId);
+  if (idx > -1) photos.splice(idx, 1);
+  render();
+}
+
+function updatePhotoTraitementLegend(probId, photoId, legend) {
+  const photo = (state.probData[probId].photosTraitement || []).find(p => p.id == photoId);
+  if (photo) photo.legend = legend;
+}
+
+function updatePhotoTraitementSize(probId, photoId, size) {
+  const photo = (state.probData[probId].photosTraitement || []).find(p => p.id == photoId);
+  if (photo) { photo.size = parseInt(size); render(); }
+}
+
 function updatePhotoLegend(probId, photoId, legend) {
   const photo = state.probData[probId].photos.find(p => p.id === photoId);
   if (photo) photo.legend = legend;
@@ -2651,6 +2668,27 @@ function _obsolete_generateDOCX_disabled() {
               children: [new TextRun({ text: photo.legend, italics: true, size: 16, color: '6B6860', font: 'Calibri' })]
             }));
           }
+        });
+      }
+      if (data.photosTraitement && data.photosTraitement.length > 0) {
+        data.photosTraitement.forEach(photo => {
+          if (photo.isPdf) return;
+          try {
+            const imgData = b64toUint8(photo.data);
+            const ext = photo.data.includes('image/png') ? 'png' : 'jpg';
+            const w = photo.size >= 400 ? 480 : 150;
+            const h = Math.round(w * 0.75);
+            children.push(new Paragraph({
+              spacing: { after: 40 },
+              children: [new ImageRun({ data: imgData, transformation: { width: w, height: h }, type: ext })]
+            }));
+            if (photo.legend) {
+              children.push(new Paragraph({
+                spacing: { after: 120 },
+                children: [new TextRun({ text: photo.legend, italics: true, size: 16, color: '6B6860', font: 'Calibri' })]
+              }));
+            }
+          } catch(e) { console.warn('photo traitement ignorée', e); }
         } catch(e) { console.warn('Photo ignorée:', e); }
       });
     }
@@ -2948,8 +2986,9 @@ function buildPDFHTML() {
           <span class="pdf-priority-label ${data.priority}">${priorityLabel(data.priority)}</span>
         </div>
         ${data.text && data.showDesc!==false ? `<div class="pdf-prob-text">${data.text}</div>` : ''}
-        ${data.traitement && data.showTraitement!==false ? `<div style="margin-top:6px;"><span style="font-size:9pt;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#666;">Traitement préconisé</span><div class="pdf-prob-text" style="margin-top:3px;">${data.traitement}</div></div>` : ''}
         ${photosHTML}
+        ${data.traitement && data.showTraitement!==false ? `<div style="margin-top:6px;"><span style="font-size:9pt;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#666;">Traitement préconisé</span><div class="pdf-prob-text" style="margin-top:3px;">${data.traitement}</div></div>` : ''}
+        ${(data.photosTraitement||[]).length > 0 ? '<div class="pdf-photos">' + (data.photosTraitement||[]).map(p => `<div class="pdf-photo-container"><img src="${p.data}" style="width:${p.size>=400?'100%':'150px'};height:${p.size>=400?'auto':'113px'};object-fit:cover;" /><div class="pdf-photo-legend">${p.legend||''}</div></div>`).join('') + '</div>' : ''}
       </div>
     `;
   });
