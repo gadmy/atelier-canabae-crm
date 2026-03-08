@@ -1588,7 +1588,7 @@ Il est fortement recommandé de faire appel à des artisans et entreprises spéc
   // UI state
   currentView: 'home',
   activeTab: 'edit',
-  showPdfPreview: true,
+  showPdfPreview: false,
   autosaveMinutes: parseInt(localStorage.getItem('cr_autosave_minutes') || '5'),
   _unsavedChanges: false,
   sidebarTab: 'client',
@@ -3218,9 +3218,9 @@ function renderEditView() {
             <div class="photo-area-title">📷 Photos pathologie</div>
             <div class="photo-grid">
               ${data.photos.map(photo => `
-                <div style="flex-shrink:0;width:${(photo.size||150)>=400?'100%':'150px'};">
-                  <div class="photo-thumb" style="width:100%;height:${(photo.size||150)>=400?'auto':'113px'};">
-                    <img src="${photo.data}" style="width:100%;height:100%;object-fit:${(photo.size||150)>=400?'contain':'cover'};" />
+                <div style="flex-shrink:0;width:150px;">
+                  <div class="photo-thumb" style="width:150px;height:113px;">
+                    <img src="${photo.data}" style="width:100%;height:100%;object-fit:cover;" />
                     <button class="photo-remove" onclick="removePhoto('${probId}', ${photo.id})">✕</button>
                     <div class="photo-legend" contenteditable="true" onblur="updatePhotoLegend('${probId}', ${photo.id}, this.textContent)">${esc(photo.legend)}</div>
                   </div>
@@ -3256,9 +3256,9 @@ function renderEditView() {
             <div class="photo-area-title">📷 Photos traitement</div>
             <div class="photo-grid">
               ${(data.photosTraitement||[]).map(photo => `
-                <div style="flex-shrink:0;width:${(photo.size||150)>=400?'100%':'150px'};">
-                  <div class="photo-thumb" style="width:100%;height:${(photo.size||150)>=400?'auto':'113px'};">
-                    <img src="${photo.data}" style="width:100%;height:100%;object-fit:${(photo.size||150)>=400?'contain':'cover'};" />
+                <div style="flex-shrink:0;width:150px;">
+                  <div class="photo-thumb" style="width:150px;height:113px;">
+                    <img src="${photo.data}" style="width:100%;height:100%;object-fit:cover;" />
                     <button class="photo-remove" onclick="removePhotoTraitement('${probId}', ${photo.id})">✕</button>
                     <div class="photo-legend" contenteditable="true" onblur="updatePhotoTraitementLegend('${probId}', ${photo.id}, this.textContent)">${esc(photo.legend||'')}</div>
                   </div>
