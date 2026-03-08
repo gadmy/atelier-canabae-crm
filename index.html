@@ -2561,7 +2561,7 @@ function _obsolete_generateDOCX_disabled() {
         try {
           const imgData = b64toUint8(photo.data);
           const ext = photo.data.includes('image/png') ? 'png' : 'jpg';
-          const w = Math.min(photo.size || 150, 300);
+          const w = photo.size >= 400 ? 480 : 150;
           const h = Math.round(w * 0.75);
           children.push(new Paragraph({
             spacing: { after: 40 },
@@ -2857,7 +2857,7 @@ function buildPDFHTML() {
     if (data.photos.length > 0) {
       photosHTML = '<div class="pdf-photos">' + data.photos.map(p => 
         `<div class="pdf-photo-container">
-          <img src="${p.data}" style="width:${p.size||150}px; height:${Math.round((p.size||150)*0.75)}px; object-fit:cover;" />
+          <img src="${p.data}" style="width:${p.size>=400?'100%':'150px'}; height:${p.size>=400?'auto':'113px'}; object-fit:cover;" />
           <div class="pdf-photo-legend">${p.legend}</div>
         </div>`
       ).join('') + '</div>';
