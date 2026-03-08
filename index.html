@@ -3239,8 +3239,13 @@ function renderEditView() {
                 ondragleave="this.classList.remove('drag-over')"
                 ondrop="event.preventDefault();this.classList.remove('drag-over');addPhotos('${probId}',event.dataTransfer.files)">
                 <span style="font-size:20px">+</span>
-                <span>Ajouter / Déposer</span>
+                <span>Galerie</span>
                 <input type="file" accept="image/*" multiple style="display:none" onchange="addPhotos('${probId}', this.files)">
+              </label>
+              <label class="photo-add-btn" style="border-color:#8B7355;color:#8B7355;">
+                <span style="font-size:20px">📷</span>
+                <span>Caméra</span>
+                <input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhotos('${probId}', this.files)">
               </label>
             </div>
           </div>
@@ -3267,13 +3272,18 @@ function renderEditView() {
                   </div>
                 </div>
               `).join('')}
-              <label class="photo-add-btn" 
+              <label class="photo-add-btn"
                 ondragover="event.preventDefault();this.classList.add('drag-over')"
                 ondragleave="this.classList.remove('drag-over')"
                 ondrop="event.preventDefault();this.classList.remove('drag-over');addPhotos('${probId}',event.dataTransfer.files)">
                 <span style="font-size:20px">+</span>
-                <span>Ajouter / Déposer</span>
+                <span>Galerie</span>
                 <input type="file" accept="image/*" multiple style="display:none" onchange="addPhotos('${probId}', this.files)">
+              </label>
+              <label class="photo-add-btn" style="border-color:#8B7355;color:#8B7355;">
+                <span style="font-size:20px">📷</span>
+                <span>Caméra</span>
+                <input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhotos('${probId}', this.files)">
               </label>
             </div>
           </div>
