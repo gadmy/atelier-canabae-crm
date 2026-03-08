@@ -1684,12 +1684,8 @@ function updatePhotoLegend(probId, photoId, legend) {
 }
 
 function updatePhotoSize(probId, photoId, size) {
-  const photo = state.probData[probId].photos.find(p => p.id === parseFloat(photoId));
-  if (photo) {
-    photo.size = parseInt(size);
-    
-    refreshPdfPreview();
-  }
+  const photo = state.probData[probId].photos.find(p => p.id == photoId);
+  if (photo) { photo.size = parseInt(size); render(); }
 }
 
 // ==================== SUPABASE API ====================
@@ -3222,9 +3218,9 @@ function renderEditView() {
             <div class="photo-area-title">📷 Photos pathologie</div>
             <div class="photo-grid">
               ${data.photos.map(photo => `
-                <div style="flex-shrink:0;">
-                  <div class="photo-thumb" style="width:150px; height:113px;">
-                    <img src="${photo.data}" />
+                <div style="flex-shrink:0;width:${(photo.size||150)>=400?'100%':'150px'};">
+                  <div class="photo-thumb" style="width:100%;height:${(photo.size||150)>=400?'auto':'113px'};">
+                    <img src="${photo.data}" style="width:100%;height:100%;object-fit:${(photo.size||150)>=400?'contain':'cover'};" />
                     <button class="photo-remove" onclick="removePhoto('${probId}', ${photo.id})">✕</button>
                     <div class="photo-legend" contenteditable="true" onblur="updatePhotoLegend('${probId}', ${photo.id}, this.textContent)">${esc(photo.legend)}</div>
                   </div>
@@ -3284,7 +3280,37 @@ function renderEditView() {
                 <span style="font-size:20px">📷</span>
                 <span>Caméra</span>
                 <input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhotos('${probId}', this.files)">
+              </label><div class="photo-area">
+            <div class="photo-area-title">📷 Photos traitement</div>
+            <div class="photo-grid">
+              ${(data.photosTraitement||[]).map(photo => `
+                <div style="flex-shrink:0;">
+                  <div class="photo-thumb" style="width:${photo.size>=400?'100%':'150px'}; height:${photo.size>=400?'auto':'113px'};">
+                    <img src="${photo.data}" style="width:100%;height:100%;object-fit:${photo.size>=400?'contain':'cover'};" />
+                    <button class="photo-remove" onclick="removePhotoTraitement('${probId}', ${photo.id})">✕</button>
+                    <div class="photo-legend" contenteditable="true" onblur="updatePhotoTraitementLegend('${probId}', ${photo.id}, this.textContent)">${esc(photo.legend||'')}</div>
+                  </div>
+                  <div style="display:flex;gap:4px;margin-top:4px;">
+                    <button onclick="updatePhotoTraitementSize('${probId}', ${photo.id}, 150)" style="flex:1;padding:2px 0;font-size:10px;cursor:pointer;background:${(photo.size||150)<400?'#8B7355':'#eee'};color:${(photo.size||150)<400?'#fff':'#333'};border:1px solid #ccc;border-radius:3px;">⅓</button>
+                    <button onclick="updatePhotoTraitementSize('${probId}', ${photo.id}, 480)" style="flex:1;padding:2px 0;font-size:10px;cursor:pointer;background:${(photo.size||150)>=400?'#8B7355':'#eee'};color:${(photo.size||150)>=400?'#fff':'#333'};border:1px solid #ccc;border-radius:3px;">▣</button>
+                  </div>
+                </div>
+              `).join('')}
+              <label class="photo-add-btn"
+                ondragover="event.preventDefault();this.classList.add('drag-over')"
+                ondragleave="this.classList.remove('drag-over')"
+                ondrop="event.preventDefault();this.classList.remove('drag-over');addPhotosTraitement('${probId}',event.dataTransfer.files)">
+                <span style="font-size:20px">+</span>
+                <span>Galerie</span>
+                <input type="file" accept="image/*" multiple style="display:none" onchange="addPhotosTraitement('${probId}', this.files)">
               </label>
+              <label class="photo-add-btn" style="border-color:#8B7355;color:#8B7355;">
+                <span style="font-size:20px">📷</span>
+                <span>Caméra</span>
+                <input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhotosTraitement('${probId}', this.files)">
+              </label>
+            </div>
+          </div>
             </div>
           </div>
         </div>
