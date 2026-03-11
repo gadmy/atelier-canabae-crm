@@ -410,6 +410,16 @@
     letter-spacing: 0.5px;
     margin-bottom: 8px;
   }
+  .prob-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--clay-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin: 14px 0 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+  }
   .photo-grid {
     display: flex;
     flex-wrap: wrap;
@@ -1573,6 +1583,12 @@ let state = {
   clientPhone: '',
   clientEmail: '',
   visitDate: new Date().toISOString().slice(0, 10),
+  redactionDate: new Date().toISOString().slice(0, 10),
+  headerNom: localStorage.getItem('cr_header_nom') || 'Alix Moreau architecte DE-HMONP',
+  headerSpecialite: localStorage.getItem('cr_header_specialite') || 'DSA architecture de terre, cultures constructives et développement durable',
+  headerAdresse: localStorage.getItem('cr_header_adresse') || '5, allée Susan SONTAG — 69 002 Lyon',
+  headerContact: localStorage.getItem('cr_header_contact') || '06 51 21 31 31 · a.moreau@ateliercanabae.com',
+  headerSiren: localStorage.getItem('cr_header_siren') || 'SIREN 808 384 440',
   buildingType: 'Maison individuelle',
   buildingAge: '',
   buildingFloors: '1',
@@ -1952,6 +1968,12 @@ async function saveToGitHub() {
     clientPhone: state.clientPhone,
     clientEmail: state.clientEmail,
     visitDate: state.visitDate,
+    redactionDate: state.redactionDate,
+    headerNom: state.headerNom,
+    headerSpecialite: state.headerSpecialite,
+    headerAdresse: state.headerAdresse,
+    headerContact: state.headerContact,
+    headerSiren: state.headerSiren,
     buildingType: state.buildingType,
     buildingAge: state.buildingAge,
     buildingFloors: state.buildingFloors,
@@ -2072,6 +2094,19 @@ function closeArtisansEditor() {
   if (ed) state.artisans = ed.innerHTML;
   state.showArtisansEditor = false;
   render();
+}
+
+function saveHeaderCR() {
+  showNotification('✓ En-tête enregistré pour ce CR');
+}
+
+function saveHeaderDefault() {
+  localStorage.setItem('cr_header_nom', state.headerNom);
+  localStorage.setItem('cr_header_specialite', state.headerSpecialite);
+  localStorage.setItem('cr_header_adresse', state.headerAdresse);
+  localStorage.setItem('cr_header_contact', state.headerContact);
+  localStorage.setItem('cr_header_siren', state.headerSiren);
+  showNotification('✓ En-tête enregistré comme modèle');
 }
 
 function saveArtisansAsDefault() {
@@ -2509,8 +2544,8 @@ function buildPdfMakeDoc() {
     const lib = s.library.find(p => p.id === probId);
     const data = s.probData[probId];
     if (!lib || !data) return;
-    const priorityColors = { urgent: '#C0392B', important: '#E67E22', surveillance: '#27AE60' };
-    const priorityLabels = { urgent: 'URGENT', important: 'IMPORTANT', surveillance: 'SURVEILLANCE' };
+    const priorityColors = { urgent: '#C0392B', important: '#E67E22', watch: '#B7950B', safe: '#27AE60' };
+    const priorityLabels = { urgent: 'URGENT', important: 'IMPORTANT', watch: 'À SURVEILLER', safe: 'SANS GRAVITÉ' };
     const color = priorityColors[data.priority] || '#888';
 
     probsContent.push({ margin: [0, c.probSpacingBefore || 14, 0, 0], columns: [
@@ -2526,15 +2561,16 @@ function buildPdfMakeDoc() {
       ]}
     ]});
 
-    if (data.localisation) {
-      probsContent.push({ text: 'Localisation', fontSize: 9, bold: true, color: '#888', margin: [0, 4, 0, 2], decoration: 'underline' });
+    if (data.localisation && data.showLocalisation !== false) {
+      probsContent.push({ text: 'Localisation', fontSize: 8.5, bold: true, color: '#7A4A2A', margin: [0, 4, 0, 2], decoration: 'underline' });
       probsContent.push({ text: data.localisation, fontSize: c.diagFontSize || 10.5, lineHeight: c.diagLineHeight || 1.55, margin: [0, 0, 0, 4] });
     }
     if (data.text && data.showDesc !== false) {
+      probsContent.push({ text: 'Description de la pathologie', fontSize: 8.5, bold: true, color: '#7A4A2A', margin: [0, 6, 0, 2], decoration: 'underline' });
       probsContent.push({ text: data.text, fontSize: c.diagFontSize || 10.5, lineHeight: c.diagLineHeight || 1.55, margin: [0, 4, 0, 0] });
     }
     if (data.traitement && data.showTraitement !== false) {
-      probsContent.push({ text: 'Traitement préconisé', fontSize: 9, bold: true, margin: [0, 6, 0, 2], color: '#666' });
+      probsContent.push({ text: 'Traitement préconisé', fontSize: 8.5, bold: true, color: '#7A4A2A', margin: [0, 6, 0, 2], decoration: 'underline' });
       probsContent.push({ text: data.traitement, fontSize: c.traitFontSize || 10, lineHeight: c.traitLineHeight || 1.5 });
     }
     if (data.photos && data.photos.length > 0) {
@@ -2580,21 +2616,22 @@ function buildPdfMakeDoc() {
   const docDef = {
     pageSize: 'A4',
     pageMargins: [mm(c.marginLeft), mm(c.marginTop), mm(c.marginRight), mm(c.marginBottom)],
+    footer: (currentPage, pageCount) => ({ text: currentPage + ' / ' + pageCount, alignment: 'center', fontSize: 8, color: '#9B9B8A', margin: [0, 8, 0, 0] }),
     defaultStyle: { font: 'Roboto', fontSize: c.introFontSize || 10, lineHeight: c.introLineHeight || 1.55, color: '#2C2A25' },
     content: [
       { columns: [
         { stack: [
           { image: logoB64, width: 100, margin: [0, 0, 0, 6] },
-          { text: 'Alix Moreau architecte DE-HMONP', fontSize: c.headerFontSize || 9 },
-          { text: 'DSA architecture de terre, cultures constructives et développement durable', fontSize: c.headerFontSize || 9 },
-          { text: '5, allée Susan SONTAG — 69 002 Lyon', fontSize: c.headerFontSize || 9 },
-          { text: '06 51 21 31 31 · a.moreau@ateliercanabae.com', fontSize: c.headerFontSize || 9 },
-          { text: 'SIREN 808 384 440', fontSize: c.headerFontSize || 9 },
+          { text: s.headerNom || '', fontSize: c.headerFontSize || 9 },
+          { text: s.headerSpecialite || '', fontSize: c.headerFontSize || 9 },
+          { text: s.headerAdresse || '', fontSize: c.headerFontSize || 9 },
+          { text: s.headerContact || '', fontSize: c.headerFontSize || 9 },
+          { text: s.headerSiren || '', fontSize: c.headerFontSize || 9 },
         ]},
         { stack: [
-          { text: 'Compte rendu de visite conseil', bold: true, alignment: 'right', fontSize: c.headerFontSize || 9 },
-          { text: 'Diagnostic pisé', alignment: 'right', fontSize: c.headerFontSize || 9 },
-          { text: 'Date : ' + (s.visitDate ? new Date(s.visitDate).toLocaleDateString('fr-FR') : '—'), alignment: 'right', fontSize: c.headerFontSize || 9 },
+          { text: 'Compte rendu de visite conseil pisé', bold: true, alignment: 'right', fontSize: 15 },
+          { text: 'Date de visite : ' + (s.visitDate ? new Date(s.visitDate).toLocaleDateString('fr-FR') : '—'), alignment: 'right', fontSize: c.headerFontSize || 9 },
+          { text: 'Date de rédaction : ' + (s.redactionDate ? new Date(s.redactionDate).toLocaleDateString('fr-FR') : '—'), alignment: 'right', fontSize: c.headerFontSize || 9 },
         ]}
       ], margin: [0, 0, 0, 12] },
 
@@ -2609,18 +2646,19 @@ function buildPdfMakeDoc() {
             fillColor: '#F5F1EA',
             margin: [10,8,10,8],
             stack: [
-              { text: 'INFORMATIONS DU BIEN', bold: true, fontSize: c.clientFontSize || 10, color: '#8B6914', margin: [0,0,0,6] },
+              { text: 'INFORMATIONS DU PROJET', bold: true, fontSize: c.clientFontSize || 10, color: '#8B6914', margin: [0,0,0,6] },
               { columns: [
                 { stack: [
-                  { text: [{ text: 'Client : ', bold: true }, s.clientName || '-'], fontSize: c.clientFontSize || 10 },
+                  { text: 'Bien', bold: true, fontSize: c.clientFontSize || 10, color: '#8B6914', margin: [0,0,0,3] },
                   { text: [{ text: 'Adresse : ', bold: true }, (s.clientAddress || '-') + ' ' + (s.clientCity || '')], fontSize: c.clientFontSize || 10 },
-                  { text: [{ text: 'Tel : ', bold: true }, s.clientPhone || '-'], fontSize: c.clientFontSize || 10 },
-                  { text: [{ text: 'Email : ', bold: true }, s.clientEmail || '-'], fontSize: c.clientFontSize || 10 }
+                  { text: [{ text: 'Type : ', bold: true }, s.buildingType || '-'], fontSize: c.clientFontSize || 10 },
+                  { text: [{ text: 'Niveaux : ', bold: true }, s.buildingFloors || '-'], fontSize: c.clientFontSize || 10 }
                 ]},
                 { stack: [
-                  { text: [{ text: 'Type : ', bold: true }, s.buildingType || '-'], fontSize: c.clientFontSize || 10 },
-                  
-                  { text: [{ text: 'Niveaux : ', bold: true }, s.buildingFloors || '-'], fontSize: c.clientFontSize || 10 }
+                  { text: 'Maître d\'ouvrage', bold: true, fontSize: c.clientFontSize || 10, color: '#8B6914', margin: [0,0,0,3] },
+                  { text: [{ text: 'Nom : ', bold: true }, s.clientName || '-'], fontSize: c.clientFontSize || 10 },
+                  { text: [{ text: 'Tél : ', bold: true }, s.clientPhone || '-'], fontSize: c.clientFontSize || 10 },
+                  { text: [{ text: 'Email : ', bold: true }, s.clientEmail || '-'], fontSize: c.clientFontSize || 10 }
                 ]}
               ]}
             ]
@@ -2630,18 +2668,19 @@ function buildPdfMakeDoc() {
 
       { text: "L'objectif de ce rapport est d'identifier les pathologies de la maçonnerie de pierre et pisé, de hiérarchiser leurs degrés d'importance et de proposer des solutions adaptées à la conservation du bâti.", italics: true, color: '#555', fontSize: c.introFontSize || 10, margin: [0, 0, 0, 6] },
       s.introText ? { text: s.introText, fontSize: c.introFontSize || 10, margin: [0, 0, 0, 4] } : null,
-      s.showObservations !== false && s.observations ? { stack: [{ text: 'Observations générales :', bold: true, fontSize: c.introFontSize || 10, margin: [0, 0, 0, 2] }, ...htmlToNodes(s.observations)], margin: [0, 0, 0, 8] } : null,
+      s.showObservations !== false && s.observations ? { stack: [{ text: 'Observations générales', bold: true, fontSize: 12, color: '#7A4A2A', decoration: 'underline', margin: [0, 0, 0, 4] }, ...htmlToNodes(s.observations)], margin: [0, 0, 0, 8] } : null,
 
+      s.selectedProbs.length > 0 ? { text: 'Problématiques identifiées', fontSize: 12, bold: true, color: '#7A4A2A', decoration: 'underline', margin: [0, 8, 0, 4] } : null,
       ...probsContent.filter(Boolean),
 
       s.showConclusion !== false && s.conclusion ? { stack: [
-        { text: 'Conclusion et recommandations', fontSize: c.conclusionFontSize || 10.5, bold: true, margin: [0, 12, 0, 4] },
+        { text: 'Conclusion et recommandations', fontSize: 12, bold: true, color: '#7A4A2A', decoration: 'underline', margin: [0, 12, 0, 4] },
         { stack: htmlToNodes(s.conclusion) }
       ]} : null,
 
       s.showArtisans !== false && s.artisans ? { stack: [
-        { text: '🏗 Artisans et ressources spécialisés', fontSize: c.artisansFontSize || 9.5, bold: true, margin: [0, 12, 0, 4], color: '#8B6914' },
-        ...htmlToNodes(s.artisans.includes('<') ? s.artisans : s.artisans.replace(/\n/g, '<br>'))
+        { text: 'Artisans et ressources spécialisés', fontSize: 12, bold: true, color: '#7A4A2A', decoration: 'underline', margin: [0, 12, 0, 4] },
+        { text: s.artisans.replace(/<[^>]+>/g, '').replace(/&nbsp;/g,' '), fontSize: c.artisansFontSize || 9.5, lineHeight: 1.5 }
       ]} : null,
     ].filter(Boolean),
   };
@@ -2687,30 +2726,30 @@ function buildPDFHTML() {
       <div class="pdf-header">
         <div class="pdf-header-left">
           <img src="https://raw.githubusercontent.com/gadmy/atelier-canabae-crm/main/LogoAtelieCanabae.png" alt="Atelier Canabae" style="height:50px;margin-bottom:8px;display:block;">
-          <p style="margin:1px 0;">Alix Moreau architecte DE-HMONP</p>
-          <p style="margin:1px 0;">DSA architecture de terre, cultures constructives et développement durable</p>
-          <p style="margin:1px 0;">5, allée Susan SONTAG — 69 002 Lyon</p>
-          <p style="margin:1px 0;">06 51 21 31 31 · a.moreau@ateliercanabae.com · www.ateliercanabae.com</p>
-          <p style="margin:1px 0;">SIREN 808 384 440</p>
+          <p style="margin:1px 0;">${esc(s.headerNom)}</p>
+          <p style="margin:1px 0;">${esc(s.headerSpecialite)}</p>
+          <p style="margin:1px 0;">${esc(s.headerAdresse)}</p>
+          <p style="margin:1px 0;">${esc(s.headerContact)}</p>
+          <p style="margin:1px 0;">${esc(s.headerSiren)}</p>
         </div>
         <div class="pdf-header-right">
-          <strong>Compte rendu de visite conseil</strong>
-          <p>Diagnostic pisé</p>
-          <p>Date : ${s.visitDate ? new Date(s.visitDate).toLocaleDateString('fr-FR') : '—'}</p>
+          <strong style="font-size:16pt;">Compte rendu de visite conseil pisé</strong>
+          <p>Date de visite : ${s.visitDate ? new Date(s.visitDate).toLocaleDateString('fr-FR') : '—'}</p>
+          <p>Date de rédaction : ${s.redactionDate ? new Date(s.redactionDate).toLocaleDateString('fr-FR') : '—'}</p>
         </div>
       </div>
 
       <div class="pdf-client-block">
-        <h3>Informations du bien</h3>
+        <h3>Informations du projet</h3>
         <div class="client-grid">
-          <div><strong>Client :</strong> ${s.clientName || '—'}</div>
-          <div><strong>Type :</strong> ${s.buildingType || '—'}</div>
+          <div><strong style="color:#8B6914;">Bien</strong></div>
+          <div><strong style="color:#8B6914;">Maître d'ouvrage</strong></div>
           <div><strong>Adresse :</strong> ${s.clientAddress || '—'} ${s.clientCity || ''}</div>
-          
+          <div><strong>Nom :</strong> ${s.clientName || '—'}</div>
+          <div><strong>Type :</strong> ${s.buildingType || '—'}</div>
           <div><strong>Tél :</strong> ${s.clientPhone || '—'}</div>
           <div><strong>Niveaux :</strong> ${s.buildingFloors || '—'}</div>
           <div><strong>Email :</strong> ${s.clientEmail || '—'}</div>
-          <div></div>
         </div>
       </div>
 
@@ -2731,7 +2770,7 @@ function buildPDFHTML() {
 
       ${s.showArtisans !== false && s.artisans ? `
       <div class="pdf-artisans">
-        <h3>🏗 Artisans et ressources spécialisés</h3>
+        <h3>Artisans et ressources spécialisés</h3>
         <div style="white-space:pre-wrap;font-size:9.5pt;">${s.artisans}</div>
       </div>` : ''}
 
@@ -2781,21 +2820,13 @@ function render() {
     <div class="app-body">
       <!-- SIDEBAR -->
       <div class="sidebar">
-        <div class="sidebar-tabs">
-          <button class="sidebar-tab ${s.sidebarTab==='client'?'active':''}" onclick="setState({sidebarTab:'client'})">🏠 Client</button>
-          <button class="sidebar-tab ${s.sidebarTab==='probs'?'active':''}" onclick="setState({sidebarTab:'probs'})">⚠️ Problématiques</button>
-        </div>
+        <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--earth);margin-bottom:14px;font-weight:400;">Problématiques</div>
 
-        <div class="sidebar-panel ${s.sidebarTab==='client'?'active':''}">
+        <div style="display:none">
         <div class="sidebar-section">
-          <h2>Informations client</h2>
-          <label>Nom du client</label>
+          <h2 style="margin-top:16px;">Maître d'ouvrage</h2>
+          <label>Nom</label>
           <input type="text" value="${esc(s.clientName)}" oninput="state.clientName=this.value" placeholder="M. / Mme..." />
-          <div style="height:8px"></div>
-          <label>Adresse du bien</label>
-          <input type="text" value="${esc(s.clientAddress)}" oninput="state.clientAddress=this.value" placeholder="Rue..." />
-          <div style="height:4px"></div>
-          <input type="text" value="${esc(s.clientCity)}" oninput="state.clientCity=this.value" placeholder="Code postal, Ville" />
           <div style="height:8px"></div>
           <div class="field-row">
             <div>
@@ -2809,6 +2840,34 @@ function render() {
           </div>
           <label>Email</label>
           <input type="email" value="${esc(s.clientEmail)}" oninput="state.clientEmail=this.value" />
+          <div style="height:8px"></div>
+
+          <h2 style="margin-top:16px;">En-tête</h2>
+          <label>Date de visite</label>
+          <input type="date" value="${esc(s.visitDate)}" oninput="state.visitDate=this.value" />
+          <div style="height:4px"></div>
+          <label>Date de rédaction</label>
+          <input type="date" value="${esc(s.redactionDate)}" oninput="state.redactionDate=this.value" />
+          <div style="height:8px"></div>
+          <label>Nom</label>
+          <input type="text" value="${esc(s.headerNom)}" oninput="state.headerNom=this.value" />
+          <div style="height:4px"></div>
+          <label>Spécialité</label>
+          <input type="text" value="${esc(s.headerSpecialite)}" oninput="state.headerSpecialite=this.value" />
+          <div style="height:4px"></div>
+          <label>Adresse</label>
+          <input type="text" value="${esc(s.headerAdresse)}" oninput="state.headerAdresse=this.value" />
+          <div style="height:4px"></div>
+          <label>Contact</label>
+          <input type="text" value="${esc(s.headerContact)}" oninput="state.headerContact=this.value" />
+          <div style="height:4px"></div>
+          <label>SIREN</label>
+          <input type="text" value="${esc(s.headerSiren)}" oninput="state.headerSiren=this.value" />
+          <div style="height:8px"></div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-secondary btn-sm" onclick="saveHeaderCR()">Enregistrer pour ce CR</button>
+            <button class="btn btn-outline btn-sm" onclick="saveHeaderDefault()">Enregistrer comme modèle</button>
+          </div>
           <div style="height:8px"></div>
           <div class="field-row">
             <div>
@@ -2828,9 +2887,8 @@ function render() {
         </div>
         </div>
 
-        <div class="sidebar-panel ${s.sidebarTab==='probs'?'active':''}">
+        <div class="sidebar-panel active">
         <div class="sidebar-section">
-          <h2>Problématiques</h2>
           <p style="font-size:12px;color:var(--text-light);margin-bottom:10px;">Cliquez pour ajouter au CR · ✎ pour modifier le texte par défaut</p>
           <div class="tag-bar">
             <button class="tag-btn ${!s.filterTag?'active':''}" onclick="setFilterTag(null)">Tout</button>
@@ -2924,6 +2982,12 @@ function getSnapshot() {
     clientName: state.clientName, clientAddress: state.clientAddress,
     clientCity: state.clientCity, clientPhone: state.clientPhone,
     clientEmail: state.clientEmail, visitDate: state.visitDate,
+    redactionDate: state.redactionDate,
+    headerNom: state.headerNom,
+    headerSpecialite: state.headerSpecialite,
+    headerAdresse: state.headerAdresse,
+    headerContact: state.headerContact,
+    headerSiren: state.headerSiren,
     buildingType: state.buildingType, buildingFloors: state.buildingFloors,
     observations: state.observations, selectedProbs: state.selectedProbs,
     probData: state.probData, conclusion: state.conclusion,
@@ -2980,8 +3044,78 @@ function refreshPdfPreview() {
 
 function renderEditView() {
   const s = state;
+
+  const formHtml = `
+    <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:28px;box-shadow:var(--shadow);">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;">
+
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--earth);margin-bottom:12px;">En-tête</div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Date de visite</label>
+          <input style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;" type="date" value="${esc(s.visitDate)}" oninput="state.visitDate=this.value" />
+          <div style="height:8px"></div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Date de rédaction</label>
+          <input style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;" type="date" value="${esc(s.redactionDate)}" oninput="state.redactionDate=this.value" />
+          <div style="height:8px"></div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Nom</label>
+          <input style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;" type="text" value="${esc(s.headerNom)}" oninput="state.headerNom=this.value" />
+          <div style="height:4px"></div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Spécialité</label>
+          <input style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;" type="text" value="${esc(s.headerSpecialite)}" oninput="state.headerSpecialite=this.value" />
+          <div style="height:4px"></div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Adresse</label>
+          <input style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;" type="text" value="${esc(s.headerAdresse)}" oninput="state.headerAdresse=this.value" />
+          <div style="height:4px"></div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Contact</label>
+          <input style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;" type="text" value="${esc(s.headerContact)}" oninput="state.headerContact=this.value" />
+          <div style="height:4px"></div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">SIREN</label>
+          <input style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;" type="text" value="${esc(s.headerSiren)}" oninput="state.headerSiren=this.value" />
+          <div style="height:8px"></div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-secondary btn-sm" onclick="saveHeaderCR()">Enregistrer pour ce CR</button>
+            <button class="btn btn-outline btn-sm" onclick="saveHeaderDefault()">Enregistrer comme modèle</button>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--earth);margin-bottom:12px;">Maître d'ouvrage</div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Nom</label>
+          <input style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;" type="text" value="${esc(s.clientName)}" oninput="state.clientName=this.value" placeholder="M. / Mme..." />
+          <div style="height:8px"></div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Téléphone</label>
+          <input style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;" type="tel" value="${esc(s.clientPhone)}" oninput="state.clientPhone=this.value" />
+          <div style="height:8px"></div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Email</label>
+          <input style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;" type="email" value="${esc(s.clientEmail)}" oninput="state.clientEmail=this.value" />
+        </div>
+
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--earth);margin-bottom:12px;">Bien</div>
+          <label class="sidebar-section" style="display:block;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Adresse</label>
+          <input style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;" type="text" value="${esc(s.clientAddress)}" oninput="state.clientAddress=this.value" placeholder="Rue..." />
+          <div style="height:4px"></div>
+          <input style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;" type="text" value="${esc(s.clientCity)}" oninput="state.clientCity=this.value" placeholder="Code postal, Ville" />
+          <div style="height:8px"></div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Type de bâtiment</label>
+          <select style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;" onchange="state.buildingType=this.value">
+            <option ${s.buildingType==='Maison individuelle'?'selected':''}>Maison individuelle</option>
+            <option ${s.buildingType==='Immeuble collectif'?'selected':''}>Immeuble collectif</option>
+            <option ${s.buildingType==='Bâtiment agricole'?'selected':''}>Bâtiment agricole</option>
+            <option ${s.buildingType==='Bâtiment public'?'selected':''}>Bâtiment public</option>
+            <option ${s.buildingType==='Autre'?'selected':''}>Autre</option>
+          </select>
+          <div style="height:8px"></div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Niveaux</label>
+          <input style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;" type="text" value="${esc(s.buildingFloors)}" oninput="state.buildingFloors=this.value" placeholder="R+1..." />
+        </div>
+
+        </div>
+    </div>
+  `;
+
   if (s.selectedProbs.length === 0) {
-    return `
+    return formHtml + `
       <div class="empty-state">
         <div class="empty-icon">🏠</div>
         <h3>Aucune problématique sélectionnée</h3>
@@ -2990,7 +3124,7 @@ function renderEditView() {
     `;
   }
 
-  let html = ``;s
+  let html = ``;
   
   s.selectedProbs.forEach((probId, idx) => {
     const lib = s.library.find(p => p.id === probId);
@@ -3015,13 +3149,14 @@ function renderEditView() {
           <span class="priority-badge priority-${data.priority}">${priorityLabel(data.priority)}</span>
         </div>
         <div class="prob-card-body">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-            <label style="font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;">Localisation</label>
+          <div class="prob-section-title" style="display:flex;align-items:center;justify-content:space-between;">
+            <span>Localisation</span>
+            <input type="checkbox" ${data.localisation||true?'checked':''} onchange="state.probData['${probId}'].showLocalisation=this.checked;render()" title="Inclure dans le PDF">
           </div>
           <textarea oninput="state.probData['${probId}'].localisation=this.value" rows="2" placeholder="Décrire la localisation...">${esc(data.localisation||'')}</textarea>
 
-          <div style="display:flex;align-items:center;gap:8px;margin-top:12px;margin-bottom:4px;">
-            <label style="font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;">Description de la pathologie</label>
+          <div class="prob-section-title" style="display:flex;align-items:center;justify-content:space-between;">
+            <span>Description de la pathologie</span>
             <input type="checkbox" ${data.showDesc!==false?'checked':''} onchange="state.probData['${probId}'].showDesc=this.checked;render()" title="Inclure dans le PDF">
           </div>
           <textarea data-prob-textarea="${probId}" oninput="updateProbText('${probId}', this.value)" rows="5" style="opacity:${data.showDesc!==false?'1':'0.4'}"></textarea>
@@ -3058,8 +3193,8 @@ function renderEditView() {
             </div>
           </div>
 
-          <div style="display:flex;align-items:center;gap:8px;margin-top:12px;margin-bottom:4px;">
-            <label style="font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;">Traitement préconisé</label>
+          <div class="prob-section-title" style="display:flex;align-items:center;justify-content:space-between;">
+            <span>Traitement préconisé</span>
             <input type="checkbox" ${data.showTraitement!==false?'checked':''} onchange="state.probData['${probId}'].showTraitement=this.checked;render()" title="Inclure dans le PDF">
           </div>
           <textarea data-prob-traitement="${probId}" oninput="updateProbTraitement('${probId}', this.value)" rows="4" placeholder="Décrire le traitement recommandé..." style="opacity:${data.showTraitement!==false?'1':'0.4'}"></textarea>
@@ -3106,7 +3241,7 @@ function renderEditView() {
   });
 
   // Observations
-  html = `
+  html = formHtml + `
     <div class="cr-section-title">Observations générales
       <label style="font-size:12px;font-weight:400;margin-left:12px;cursor:pointer;">
         <input type="checkbox" ${state.showObservations!==false?'checked':''} onchange="state.showObservations=this.checked;render()" style="margin-right:4px;">
@@ -3143,7 +3278,7 @@ function renderEditView() {
     </div>
 
     <div class="cr-section-title" style="margin-top:28px">
-      🏗 Artisans et ressources spécialisés
+      Artisans et ressources spécialisés
       <label style="font-size:12px;font-weight:400;margin-left:12px;cursor:pointer;">
         <input type="checkbox" ${state.showArtisans!==false?'checked':''} onchange="state.showArtisans=this.checked;render()" style="margin-right:4px;">
         Inclure dans le PDF
