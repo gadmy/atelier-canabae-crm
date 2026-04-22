@@ -1140,6 +1140,18 @@
     background: white;
     outline: none;
   }
+  .editor-content * {
+    font-family: inherit !important;
+    font-size: inherit !important;
+    color: inherit !important;
+    background: transparent !important;
+  }
+  .editor-content b, .editor-content strong { font-weight: bold !important; }
+  .editor-content i, .editor-content em { font-style: italic !important; }
+  .editor-content u { text-decoration: underline !important; }
+  .editor-content h1 { font-size: 1.6em !important; }
+  .editor-content h2 { font-size: 1.4em !important; }
+  .editor-content h3 { font-size: 1.2em !important; }
   .editor-content:focus {
     border-color: var(--earth-light);
   }
@@ -2098,7 +2110,13 @@ function openArtisansEditor() {
       ed.onpaste = function(e) {
         e.preventDefault();
         const text = (e.clipboardData || window.clipboardData).getData('text/plain');
-        document.execCommand('insertText', false, text);
+        // Convertir les retours à la ligne en <br> et échapper le HTML pour éviter toute injection
+        const escaped = text
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/\r\n|\r|\n/g, '<br>');
+        document.execCommand('insertHTML', false, escaped);
       };
     }
   }, 50);
