@@ -2094,6 +2094,12 @@ function openArtisansEditor() {
       }
       ed.innerHTML = content;
       ed.focus();
+      // Intercepter le collage pour éviter les polices/styles externes qui cassent pdfmake
+      ed.onpaste = function(e) {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+        document.execCommand('insertText', false, text);
+      };
     }
   }, 50);
 }
@@ -2524,6 +2530,12 @@ function htmlToNodes(html) {
   let safeHtml = html;
   if (typeof safeHtml === 'string' && safeHtml.indexOf('\n') !== -1 && !/<(p|div|ul|ol|li|br|h[1-6])\b/i.test(safeHtml)) {
     safeHtml = '<p>' + safeHtml.replace(/\n/g, '<br>') + '</p>';
+  }
+  // Nettoyage : supprimer les font-family inline (Arial, Calibri, Times…) que pdfmake ne connaît pas
+  if (typeof safeHtml === 'string') {
+    safeHtml = safeHtml.replace(/font-family\s*:\s*[^;"']*;?/gi, '');
+    safeHtml = safeHtml.replace(/\sface\s*=\s*"[^"]*"/gi, '');
+    safeHtml = safeHtml.replace(/\sface\s*=\s*'[^']*'/gi, '');
   }
   try {
     const result = htmlToPdfmake(safeHtml, {
