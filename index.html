@@ -1618,7 +1618,7 @@ Il est fortement recommandé de faire appel à des artisans et entreprises spéc
   showObservations: true,
   showConclusion: true,
   showArtisans: true,
-  artisans: localStorage.getItem('cr_default_artisans') || `Pour la réalisation des travaux, je recommande de faire appel à des artisans maîtrisant la construction traditionnelle. Des annuaires d'artisans qualifiés sont disponibles sur les sites :\n- OIKOS : oikos-ecoconstruction.com\n- Réseau Cabestan : cabestan.fr\n- ASTERRE : asterre.org\n\nSi les artisans proposés sur ces listes ne sont pas disponibles ou trop onéreux, il est tout à fait possible de faire appel à des artisans conventionnels.`,
+  artisans: localStorage.getItem('cr_default_artisans') || `<p>Pour la réalisation des travaux, je recommande de faire appel à des artisans maîtrisant la construction traditionnelle. Des annuaires d'artisans qualifiés sont disponibles sur les sites :</p><ul><li>OIKOS : oikos-ecoconstruction.com</li><li>Réseau Cabestan : cabestan.fr</li><li>ASTERRE : asterre.org</li></ul><p>Si les artisans proposés sur ces listes ne sont pas disponibles ou trop onéreux, il est tout à fait possible de faire appel à des artisans conventionnels.</p>`,
   introText: '',
   supabaseReady: false,
   currentCRId: null,
@@ -2064,7 +2064,7 @@ function newCR() {
   state.selectedProbs = [];
   state.probData = {};
   state.conclusion = '';
-  state.artisans = localStorage.getItem('cr_default_artisans') || `Pour la réalisation des travaux, je recommande de faire appel à des artisans maîtrisant la construction traditionnelle. Des annuaires d'artisans qualifiés sont disponibles sur les sites :\n- OIKOS : oikos-ecoconstruction.com\n- Réseau Cabestan : cabestan.fr\n- ASTERRE : asterre.org\n\nSi les artisans proposés sur ces listes ne sont pas disponibles ou trop onéreux, il est tout à fait possible de faire appel à des artisans conventionnels.`;
+  state.artisans = localStorage.getItem('cr_default_artisans') || `<p>Pour la réalisation des travaux, je recommande de faire appel à des artisans maîtrisant la construction traditionnelle. Des annuaires d'artisans qualifiés sont disponibles sur les sites :</p><ul><li>OIKOS : oikos-ecoconstruction.com</li><li>Réseau Cabestan : cabestan.fr</li><li>ASTERRE : asterre.org</li></ul><p>Si les artisans proposés sur ces listes ne sont pas disponibles ou trop onéreux, il est tout à fait possible de faire appel à des artisans conventionnels.</p>`;
   state.library = [...DEFAULT_PROBLEMATIQUES, ...JSON.parse(localStorage.getItem('cr_custom_probs') || '[]')];
   state.currentView = 'editor';
   state.activeTab = 'edit';
@@ -2085,7 +2085,16 @@ function openArtisansEditor() {
   render();
   setTimeout(() => {
     const ed = document.getElementById('artisans-editor');
-    if (ed) { ed.innerHTML = state.artisans || ''; ed.focus(); }
+    if (ed) {
+      let content = state.artisans || '';
+      // Migration : si le contenu contient des \n sans balises HTML, on le convertit en HTML propre
+      if (typeof content === 'string' && content.indexOf('\n') !== -1 && !/<(p|div|ul|ol|li|br|h[1-6])\b/i.test(content)) {
+        content = '<p>' + content.replace(/\n/g, '<br>') + '</p>';
+        state.artisans = content;
+      }
+      ed.innerHTML = content;
+      ed.focus();
+    }
   }, 50);
 }
 
@@ -2510,8 +2519,14 @@ const LOGO_B64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAAB2CAYAAABY
 
 function htmlToNodes(html) {
   if (!html) return [{ text: '' }];
+  // Normalisation : si le contenu contient des \n bruts sans balises HTML structurantes,
+  // on les convertit en <br> pour éviter que htmlToPdfmake ne plante sur du texte mixte.
+  let safeHtml = html;
+  if (typeof safeHtml === 'string' && safeHtml.indexOf('\n') !== -1 && !/<(p|div|ul|ol|li|br|h[1-6])\b/i.test(safeHtml)) {
+    safeHtml = '<p>' + safeHtml.replace(/\n/g, '<br>') + '</p>';
+  }
   try {
-    const result = htmlToPdfmake(html, {
+    const result = htmlToPdfmake(safeHtml, {
       defaultStyles: {
         b: { bold: true },
         strong: { bold: true },
