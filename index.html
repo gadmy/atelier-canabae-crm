@@ -2561,6 +2561,19 @@ function htmlToNodes(html) {
     safeHtml = safeHtml.replace(/\sface\s*=\s*"[^"]*"/gi, '');
     safeHtml = safeHtml.replace(/\sface\s*=\s*'[^']*'/gi, '');
   }
+  // Conversion des <font size="X"> en ratio proportionnel à la taille de base du bloc,
+  // pour que Petit/Normal/Moyen/Grand soient cohérents entre l'éditeur et le PDF.
+  // size=3 (Normal) : pas de surcharge → hérite du fontSize du bloc PDF (9.5 artisans, 10 autres).
+  // Autres tailles : calculées en pt absolus calibrés sur ~10pt.
+  if (typeof safeHtml === 'string') {
+    const sizePt = { '1': '7.8pt', '2': '8.9pt', '4': '11.5pt', '5': '13.3pt', '6': '16.3pt', '7': '20.7pt' };
+    safeHtml = safeHtml.replace(/<font\s+size\s*=\s*["']?(\d)["']?\s*>/gi, function(match, sz) {
+      if (sz === '3') return '<span>';
+      const s = sizePt[sz];
+      return s ? '<span style="font-size:' + s + '">' : '<span>';
+    });
+    safeHtml = safeHtml.replace(/<\/font>/gi, '</span>');
+  }
   try {
     const result = htmlToPdfmake(safeHtml, {
       defaultStyles: {
