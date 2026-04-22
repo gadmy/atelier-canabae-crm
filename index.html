@@ -2632,10 +2632,6 @@ function buildPdfMakeDoc() {
       probsContent.push({ text: 'Description de la pathologie', fontSize: 8.5, bold: true, color: '#7A4A2A', margin: [0, 6, 0, 2], decoration: 'underline' });
       probsContent.push({ text: data.text, fontSize: c.diagFontSize || 10.5, lineHeight: c.diagLineHeight || 1.55, margin: [0, 4, 0, 0] });
     }
-    if (data.traitement && data.showTraitement !== false) {
-      probsContent.push({ text: 'Traitement préconisé', fontSize: 8.5, bold: true, color: '#7A4A2A', margin: [0, 6, 0, 2], decoration: 'underline' });
-      probsContent.push({ text: data.traitement, fontSize: c.traitFontSize || 10, lineHeight: c.traitLineHeight || 1.5 });
-    }
     if (data.photos && data.photos.length > 0) {
       const rows = [];
       let currentRow = [];
@@ -2653,6 +2649,10 @@ function buildPdfMakeDoc() {
       rows.forEach(row => {
         probsContent.push({ columns: row, columnGap: 8, margin: [0, 6, 0, 0] });
       });
+    }
+    if (data.traitement && data.showTraitement !== false) {
+      probsContent.push({ text: 'Traitement préconisé', fontSize: 8.5, bold: true, color: '#7A4A2A', margin: [0, 6, 0, 2], decoration: 'underline' });
+      probsContent.push({ text: data.traitement, fontSize: c.traitFontSize || 10, lineHeight: c.traitLineHeight || 1.5 });
     }
     // Photos traitement
     if (data.photosTraitement && data.photosTraitement.length > 0) {
